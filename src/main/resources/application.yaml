@@ -1,0 +1,32 @@
+spring:
+  cloud:
+    stream:
+      bindings:
+        output:
+          destination: orders-out
+        input:
+          destination: orders-in
+      rabbit:
+        bindings:
+          input:
+            consumer:
+              exchangeType: direct
+  rabbitmq:
+    host: 192.168.123.176
+    port: 5672
+  application:
+    name: expenses-catalog-servers
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  metrics:
+    export:
+      prometheus:
+        enabled: true

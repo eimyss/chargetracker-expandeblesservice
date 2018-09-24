@@ -1,0 +1,54 @@
+keycloak:
+  auth-server-url: http://192.168.123.157:8180/auth
+  realm: expenses
+  resource: expenses-app
+  public-client: true
+  principal-attribute: preferred_username
+spring:
+  profiles: ref, populate
+  application:
+    name: expenses-catalog-servers-ref
+  datasource:
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    platform: h2
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: false
+        use_sql_comments: false
+        format_sql: false
+  h2:
+    console:
+      enabled: true
+      path: /console
+      settings:
+        trace: false
+        web-allow-others: false
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.123.204:8761/eureka/
+  appInfo:
+    replicate:
+      interval: 3
+    initial:
+      replicate:
+        time: 3
+  instance:
+    statusPageUrlPath: /actuator
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 3
+    healthCheckUrlPath: /actuator/health
+log4j:
+  logger:
+    org:
+      hibernate:
+        type: INFO
+server:
+  port: 8090
