@@ -266,7 +266,7 @@ public class ExpensesControllerTest {
                 .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
                 .andExpect(jsonPath("$.refAccountId", is(1)))
                 .andExpect(jsonPath("$.total", is(20)))
-                .andExpect(jsonPath("$.countExpenses", is(18)));
+                .andExpect(jsonPath("$.countExpenses", is(2)));
 
     }
 
@@ -308,24 +308,17 @@ public class ExpensesControllerTest {
         mockMvc.perform(get("/expense/overview/expenses/" + 1).principal(mockPrincipal)).andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
                 .andExpect(jsonPath("$.refAccountId", is(1)))
-                .andExpect(jsonPath("$.totalExpensesCount", is(18)))
-                .andExpect(jsonPath("$.total", is(180)))
-                .andExpect(jsonPath("$.countExpenses", is(18)))
+                .andExpect(jsonPath("$.totalExpensesCount", is(2)))
+                .andExpect(jsonPath("$.total", is(20)))
+                .andExpect(jsonPath("$.countExpenses", is(2)))
                 .andExpect(jsonPath("$.categoryAndCountList[0].category", is("STEUER")))
-                .andExpect(jsonPath("$.categoryAndCountList[0].count", is(18)));
+                .andExpect(jsonPath("$.categoryAndCountList[0].count", is(2)));
         //  .andExpect(jsonPath("$.categoryAndAmountList[0].name", is("STEUER")))
         //  .andExpect(jsonPath("$.categoryAndAmountList[0].amount", is(30)));
 
 
     }
 
-
-    @Test
-    public void testGetAccountListNoAuth() throws Exception {
-
-        mockMvc.perform(get("/expense/list")).andExpect(status().isForbidden())
-                .andDo(MockMvcResultHandlers.print());
-    }
 
     @Test
     @Ignore
