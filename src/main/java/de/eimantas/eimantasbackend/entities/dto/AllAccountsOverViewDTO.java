@@ -21,7 +21,7 @@ public class AllAccountsOverViewDTO {
 
    int monthBack;
    private LocalDateTime createDate;
-   private long userId;
+   private String userId;
 
 
     List<ExpenseDTO> unexpenced;

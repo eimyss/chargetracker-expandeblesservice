@@ -35,7 +35,7 @@ public class TestUtils {
         exp.setCreateDate(Instant.now());
         exp.setOrt("Mainz");
         exp.setAccountId(1L);
-        exp.setUserId(1L);
+        exp.setUserId("1L");
 
         return exp;
     }

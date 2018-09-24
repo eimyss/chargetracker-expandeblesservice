@@ -27,7 +27,7 @@ public class ExpenseDTO {
         String name;
         private String ort;
         private String purpose;
-        Long userId;
+        String userId;
         private Instant createDate;
         private LocalDate updateDate;
         private LocalDate bookingDate;

@@ -30,3 +30,18 @@ management:
     export:
       prometheus:
         enabled: true
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.123.204:8761/eureka/
+  appInfo:
+    replicate:
+      interval: 3
+    initial:
+      replicate:
+        time: 3
+  instance:
+    statusPageUrlPath: /actuator
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 3
+    healthCheckUrlPath: /actuator/health

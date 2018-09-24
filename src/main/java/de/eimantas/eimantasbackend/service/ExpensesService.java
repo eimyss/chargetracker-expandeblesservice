@@ -255,7 +255,7 @@ public class ExpensesService {
         return expenseRepository.findAll();
     }
 
-    public Collection<Expense> findByUserId(Long id) {
+    public Collection<Expense> findByUserId(String id) {
         return expenseRepository.findByUserId(id);
     }
 
@@ -282,7 +282,7 @@ public class ExpensesService {
         if (principal == null)
             throw new SecurityException("Principal cannot be null");
 
-        Long userId = securityService.getUserIdFromPrincipal(principal);
+        String userId = securityService.getUserIdFromPrincipal(principal);
         logger.info("obtained principal " + principal.getName() + "for user id: " + userId);
 
         Map<Long, List<MonthAndAmountOverview>> overview = new HashMap<Long, List<MonthAndAmountOverview>>();

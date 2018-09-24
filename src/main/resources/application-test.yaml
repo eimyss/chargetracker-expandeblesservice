@@ -7,7 +7,7 @@ keycloak:
 spring:
   profiles: test
   application:
-    name: expenses-catalog-servers
+    name: account-service
   datasource:
     url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     platform: h2
@@ -32,7 +32,7 @@ spring:
         web-allow-others: false
 eureka:
   client:
-    enabled: false
+    enabled: true
 log4j:
   logger:
     org:
@@ -46,4 +46,4 @@ feign:
   client:
     config:
       account:
-        name: account-service
+        name: account-service-int

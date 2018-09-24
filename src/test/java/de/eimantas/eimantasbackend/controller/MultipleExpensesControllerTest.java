@@ -1,6 +1,7 @@
 package de.eimantas.eimantasbackend.controller;
 
 import de.eimantas.eimantasbackend.TestUtils;
+import de.eimantas.eimantasbackend.client.AccountsClient;
 import de.eimantas.eimantasbackend.entities.Expense;
 import de.eimantas.eimantasbackend.entities.dto.ExpenseDTO;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
@@ -8,7 +9,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.keycloak.representations.AccessToken;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
-import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -69,11 +73,14 @@ public class MultipleExpensesControllerTest {
     private List<Expense> expensesList2 = new ArrayList<>();
 
     @Autowired
+    private AccountsClient client;
+
+    @Autowired
     private ExpenseRepository expensesRepository;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-    private Principal mockPrincipal;
+    private KeycloakAuthenticationToken mockPrincipal;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -92,7 +99,16 @@ public class MultipleExpensesControllerTest {
 
         // auth stuff
         mockPrincipal = Mockito.mock(KeycloakAuthenticationToken.class);
-        Mockito.when(mockPrincipal.getName()).thenReturn("test@test.de");
+        Mockito.when(mockPrincipal.getName()).thenReturn("test");
+
+        KeycloakPrincipal keyPrincipal = Mockito.mock(KeycloakPrincipal.class);
+        RefreshableKeycloakSecurityContext ctx = Mockito.mock(RefreshableKeycloakSecurityContext.class);
+
+        AccessToken token = Mockito.mock(AccessToken.class);
+        Mockito.when(token.getSubject()).thenReturn("1L");
+        Mockito.when(ctx.getToken()).thenReturn(token);
+        Mockito.when(keyPrincipal.getKeycloakSecurityContext()).thenReturn(ctx);
+        Mockito.when(mockPrincipal.getPrincipal()).thenReturn(keyPrincipal);
 
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
 
@@ -105,7 +121,7 @@ public class MultipleExpensesControllerTest {
             for (int y = 0; y < expensesForMonth; y++) {
                 Expense e = TestUtils.getExpense(i);
                 e.setAccountId(1L);
-                e.setUserId(1L);
+                e.setUserId("1L");
                 expensesList.add(e);
 
             }
@@ -119,7 +135,7 @@ public class MultipleExpensesControllerTest {
             for (int y = 0; y < expensesForMonth; y++) {
                 Expense e = TestUtils.getExpense(i);
                 e.setAccountId(2L);
-                e.setUserId(2L);
+                e.setUserId("2L");
                 expensesList2.add(e);
             }
         }
@@ -260,11 +276,80 @@ public class MultipleExpensesControllerTest {
                 .andExpect(jsonPath("$", hasSize(4)));
     }
 
+    @Test
+    @Transactional
+    public void readOverview() throws Exception {
+        // given(controller.principal).willReturn(allEmployees);
+        mockMvc.perform(get("/expense/overview/" + 1).principal(mockPrincipal)).andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$.refAccountId", is(1)))
+                .andExpect(jsonPath("$.total", is(180)))
+                .andExpect(jsonPath("$.countExpenses", is(18)));
+
+
+        mockMvc.perform(get("/expense/overview/" + 2).principal(mockPrincipal)).andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$.refAccountId", is(2)))
+                .andExpect(jsonPath("$.total", is(180)))
+                .andExpect(jsonPath("$.countExpenses", is(18)));
+
+    }
+
+
+    @Test
+    @Ignore
+    public void readNonExistingOverview() throws Exception {
+
+        // given(controller.principal).willReturn(allEmployees);
+        mockMvc.perform(get("/expense/overview/" + 98).principal(mockPrincipal)).andExpect(status().isNotFound());
+    }
+
+
     @SuppressWarnings("unchecked")
     protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
         this.mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
+
+
+    @Test
+   @Ignore
+    public void testGetGlobalOverview() throws Exception {
+
+        ArrayList<Long> list = new ArrayList<>();
+        list.add(1L);
+        Mockito.when(client.getAccountList()).thenReturn(list);
+
+        // given(controller.principal).willReturn(allEmployees);
+        mockMvc.perform(get("/expense/global-overview").principal(mockPrincipal)).andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$.monthBack", is(6)))
+                .andExpect(jsonPath("$.userId", is("1L")))
+                .andExpect(jsonPath("$.overview." + 1, hasSize(6)))
+                .andExpect(jsonPath("$.unexpenced", hasSize((int) expensesRepository.count() - expensesForMonth * 2)));
+
+    }
+
+    @Test
+    @Transactional
+    public void testGetExpensesOverview() throws Exception {
+
+        // given(controller.principal).willReturn(allEmployees);
+        mockMvc.perform(get("/expense/overview/expenses/" + 1).principal(mockPrincipal)).andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$.accountName", is("testname")))
+                .andExpect(jsonPath("$.refAccountId", is(1)))
+                .andExpect(jsonPath("$.totalExpensesCount", is(18)))
+                .andExpect(jsonPath("$.total", is(180)))
+                .andExpect(jsonPath("$.countExpenses", is(18)))
+                .andExpect(jsonPath("$.categoryAndCountList[0].category", is("STEUER")))
+                .andExpect(jsonPath("$.categoryAndCountList[0].count", is(18)));
+        //  .andExpect(jsonPath("$.categoryAndAmountList[0].name", is("STEUER")))
+        //  .andExpect(jsonPath("$.categoryAndAmountList[0].amount", is(30)));
+
+
+    }
+
 
 }

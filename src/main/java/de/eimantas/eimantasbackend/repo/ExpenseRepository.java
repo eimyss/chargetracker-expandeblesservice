@@ -37,7 +37,7 @@ public interface ExpenseRepository extends CrudRepository<Expense, Long>, JpaSpe
 
 	public List<Expense> findByCreateDateBetween(Instant startDate, Instant endDate);
 
-	public Collection<Expense> findByUserId(Long userId);
+	public Collection<Expense> findByUserId(String userId);
 
 
     public int countByAccountId(long accountID);

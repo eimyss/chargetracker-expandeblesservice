@@ -91,7 +91,7 @@ public class ExpensesRepositoryTest {
         exp.setOrt("Test Ort");
         exp.setCreateDate(Instant.now().minus(1, ChronoUnit.DAYS));
         exp.setAccountId(1L);
-        exp.setUserId(1L);
+        exp.setUserId("1L");
 
         this.expensesList.add(exp);
         // this.expensesList.add(expensesRepository.save(exp));
@@ -103,7 +103,7 @@ public class ExpensesRepositoryTest {
         exp2.setOrt("Bingen");
         exp2.setCreateDate(Instant.now().minus(40, ChronoUnit.DAYS));
         exp2.setAccountId(1L);
-        exp2.setUserId(1L);
+        exp2.setUserId("1L");
 
         this.expensesList.add(exp2);
         expensesRepository.saveAll(expensesList);

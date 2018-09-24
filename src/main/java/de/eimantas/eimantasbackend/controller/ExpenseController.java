@@ -3,9 +3,12 @@ package de.eimantas.eimantasbackend.controller;
 import de.eimantas.eimantasbackend.controller.exceptions.BadRequestException;
 import de.eimantas.eimantasbackend.controller.exceptions.ErrorDesc;
 import de.eimantas.eimantasbackend.controller.exceptions.NonExistingEntityException;
+import de.eimantas.eimantasbackend.entities.AccountOverView;
 import de.eimantas.eimantasbackend.entities.Expense;
 import de.eimantas.eimantasbackend.entities.ExpenseCategory;
 import de.eimantas.eimantasbackend.entities.converter.EntitiesConverter;
+import de.eimantas.eimantasbackend.entities.dto.AccountOverViewDTO;
+import de.eimantas.eimantasbackend.entities.dto.AllAccountsOverViewDTO;
 import de.eimantas.eimantasbackend.entities.dto.CSVExpenseDTO;
 import de.eimantas.eimantasbackend.entities.dto.ExpenseDTO;
 import de.eimantas.eimantasbackend.helpers.PopulateStuff;
@@ -13,6 +16,7 @@ import de.eimantas.eimantasbackend.messaging.ExpensesSender;
 import de.eimantas.eimantasbackend.processing.FileProcessor;
 import de.eimantas.eimantasbackend.service.ExpensesService;
 import de.eimantas.eimantasbackend.service.SecurityService;
+import io.swagger.annotations.ApiResponse;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -72,7 +76,7 @@ public class ExpenseController {
 
         KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
 
-        long userId = securityService.getUserIdFromPrincipal(userAuth);
+        String userId = securityService.getUserIdFromPrincipal(userAuth);
 
         logger.info("requesting expenses for user: " + userId);
         logger.info(String.format("returning count: %d", StreamSupport.stream(expensesService.findByUserId(userId).spliterator(), false)
@@ -117,7 +121,7 @@ public class ExpenseController {
     public ResponseEntity<String> populateExpenses(Principal principal, @PathVariable long accountId) {
         KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
 
-        long userId = securityService.getUserIdFromPrincipal(userAuth);
+        String userId = securityService.getUserIdFromPrincipal(userAuth);
 
         List<Expense> expenses = new ArrayList<>();
 
@@ -144,7 +148,7 @@ public class ExpenseController {
     public Collection<ExpenseDTO> searchExpenses(Principal principal, @RequestParam("name") String name) {
 
         KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-        long userId = securityService.getUserIdFromPrincipal(userAuth);
+        String userId = securityService.getUserIdFromPrincipal(userAuth);
         logger.info("Getting search for string: " + name);
         List<Expense> foundexpenses = expensesService.searchExpensesByName(name);
         logger.info("found " + foundexpenses.size() + " for string" + name);
@@ -165,7 +169,7 @@ public class ExpenseController {
         logger.info("getting expenses in period from " + fromDate.toString() + " to " + toDate.toString());
         // prep for future
         KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-        long userId = securityService.getUserIdFromPrincipal(userAuth);
+        String userId = securityService.getUserIdFromPrincipal(userAuth);
         logger.info("Requested for user: " + userId);
         List<Expense> expenses = expensesService.searchExpensesInPeriod(fromDate.toInstant(), toDate.toInstant());
 
@@ -194,7 +198,7 @@ public class ExpenseController {
 
 
         KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-        long userId = securityService.getUserIdFromPrincipal(userAuth);
+        String userId = securityService.getUserIdFromPrincipal(userAuth);
         logger.info("got user: " + userId);
 
 
@@ -249,7 +253,7 @@ public class ExpenseController {
         logger.info("creating expense: " + expense.toString());
 
         KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-        long userId = securityService.getUserIdFromPrincipal(userAuth);
+        String userId = securityService.getUserIdFromPrincipal(userAuth);
 
         logger.info("setting epxense for userid: " + userId);
 
@@ -284,7 +288,7 @@ public class ExpenseController {
         logger.info("update expense: " + expense.toString());
 
         KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-        long userId = securityService.getUserIdFromPrincipal(userAuth);
+        String userId = securityService.getUserIdFromPrincipal(userAuth);
 
         logger.info("setting epxense for userid: " + userId);
 
@@ -311,6 +315,51 @@ public class ExpenseController {
 
     }
 
+    @GetMapping(value = "/overview/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "*")
+    public AccountOverView getAccOverview(Principal principal, @PathVariable long id) throws NonExistingEntityException {
+
+
+        KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
+
+        Optional<AccountOverView> overview = expensesService.getOverViewForAccount(id, userAuth);
+
+        if (!overview.isPresent())
+            throw new NonExistingEntityException("Entity is not found with id: " + id);
+
+        return overview.get();
+
+    }
+
+
+    @GetMapping(value = "/global-overview", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "*")
+    @Transactional
+    @ApiResponse(response = AllAccountsOverViewDTO.class, message = "Returns overiew for all accounts", code = 200)
+    public AllAccountsOverViewDTO getGlobalOverview(Principal principal) {
+
+        KeycloakAuthenticationToken user = (KeycloakAuthenticationToken) principal;
+        AllAccountsOverViewDTO dto = expensesService.getAllACccountsOverViewForUser(user);
+        return dto;
+
+    }
+
+
+    @GetMapping(value = "/overview/expenses/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<AccountOverViewDTO> getExpensesOverview(Principal principal, @PathVariable long id) {
+
+        if (principal == null)
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+
+        if (id == 0)
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+
+        KeycloakAuthenticationToken user = (KeycloakAuthenticationToken) principal;
+        Optional<AccountOverViewDTO> overview = expensesService.getExpensesOverview(id, user);
+        return overview.map(entity -> new ResponseEntity<AccountOverViewDTO>(entity, HttpStatus.OK)).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+    }
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)

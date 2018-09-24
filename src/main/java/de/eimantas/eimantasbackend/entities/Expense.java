@@ -29,7 +29,7 @@ public class Expense {
 	@Column(length = 1000)
 	String name;
 	private String ort;
-	private long userId;
+	private String userId;
 	private Instant createDate;
 	@Column(length = 1000)
 	private String purpose;

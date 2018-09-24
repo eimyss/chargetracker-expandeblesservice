@@ -110,7 +110,7 @@ public class ProcessingServiceTest {
 
         dtosconverted.forEach(dto -> {
             dto.setAccountId(1L);
-            dto.setUserId(1L);
+            dto.setUserId("1L");
             dto.setExpensable(true);
             dto.setCategory("IMPORTED");
         });
