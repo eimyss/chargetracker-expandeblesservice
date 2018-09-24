@@ -274,8 +274,12 @@ public class ExpensesControllerTest {
     @Test
     public void readNonExistingOverview() throws Exception {
 
+
+        // TODO or not todo
+        // should microservice check for the other microservice if the entitiy exists?
+        // that way I could keep consitency...
         // given(controller.principal).willReturn(allEmployees);
-        mockMvc.perform(get("/expense/overview/" + 98).principal(mockPrincipal)).andExpect(status().isNotFound());
+        mockMvc.perform(get("/expense/overview/" + 98).principal(mockPrincipal)).andExpect(status().isOk());
     }
 
 

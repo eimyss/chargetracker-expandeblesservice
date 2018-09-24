@@ -86,9 +86,12 @@ public class ExpensesService {
         overView.setCountExpenses(expensesList.size());
         overView.setActive(true);
 
+
+        if(!expensesList.isEmpty()) {
+            BigDecimal sum = expensesList.stream().filter(expense -> !expense.isExpensed()).map(Expense::getBetrag).reduce(BigDecimal::add).get();
+            overView.setTotal(sum);
+        }
         // sum of all values that are already expensed
-        BigDecimal sum = expensesList.stream().filter(expense -> !expense.isExpensed()).map(Expense::getBetrag).reduce(BigDecimal::add).get();
-        overView.setTotal(sum);
 
         return Optional.of(overView);
 
