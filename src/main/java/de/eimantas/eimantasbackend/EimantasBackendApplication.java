@@ -1,5 +1,6 @@
 package de.eimantas.eimantasbackend;
 
+import brave.sampler.Sampler;
 import de.eimantas.eimantasbackend.entities.converter.EntitiesConverter;
 import feign.RequestInterceptor;
 import org.modelmapper.ModelMapper;
@@ -36,6 +37,10 @@ public class EimantasBackendApplication {
     @Bean
     public SecurityEvaluationContextExtension securityEvaluationContextExtension() {
         return new SecurityEvaluationContextExtension();
+    }
+    @Bean
+    public Sampler defaultSampler() {
+        return Sampler.ALWAYS_SAMPLE;
     }
 
     @Bean
