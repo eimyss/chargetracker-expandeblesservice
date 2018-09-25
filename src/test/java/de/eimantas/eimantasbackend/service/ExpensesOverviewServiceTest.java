@@ -44,205 +44,205 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 public class ExpensesOverviewServiceTest {
 
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
-            MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
+  private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
+      MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    private List<Expense> expensesList = new ArrayList<>();
+  private List<Expense> expensesList = new ArrayList<>();
 
-    @Inject
-    private ExpensesService expensesService;
-    @Autowired
-    private ExpenseRepository expensesRepository;
+  @Inject
+  private ExpensesService expensesService;
+  @Autowired
+  private ExpenseRepository expensesRepository;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+  @Autowired
+  private WebApplicationContext webApplicationContext;
 
-    private int monthsGoBack = 6;
-    private int expensesForMonth = 3;
-    private KeycloakAuthenticationToken mockPrincipal;
-    private List<Expense> expenses;
+  private int monthsGoBack = 6;
+  private int expensesForMonth = 3;
+  private KeycloakAuthenticationToken mockPrincipal;
+  private List<Expense> expenses;
 
 
-    @Before
-    public void setup() throws Exception {
-        // auth stuff
-        expensesRepository.deleteAll();
-        mockPrincipal = Mockito.mock(KeycloakAuthenticationToken.class);
-        Mockito.when(mockPrincipal.getName()).thenReturn("test");
+  @Before
+  public void setup() throws Exception {
+    // auth stuff
+    expensesRepository.deleteAll();
+    mockPrincipal = Mockito.mock(KeycloakAuthenticationToken.class);
+    Mockito.when(mockPrincipal.getName()).thenReturn("test");
 
-        this.mockMvc = webAppContextSetup(webApplicationContext).build();
-        this.expensesRepository.deleteAll();
+    this.mockMvc = webAppContextSetup(webApplicationContext).build();
+    this.expensesRepository.deleteAll();
 
-        expenses = new ArrayList<>();
+    expenses = new ArrayList<>();
 
-        // populate acc with expenses
-        for (int i = 0; i < monthsGoBack; i++) {
-            // whats ussual second name for iteration?
-            for (int y = 0; y < expensesForMonth; y++) {
-                Expense e = TestUtils.getExpense(i);
-                e.setUserId("1L");
-                e.setAccountId(1L);
-                expenses.add(e);
-            }
-        }
-
-        expensesRepository.saveAll(expenses);
-
+    // populate acc with expenses
+    for (int i = 0; i < monthsGoBack; i++) {
+      // whats ussual second name for iteration?
+      for (int y = 0; y < expensesForMonth; y++) {
+        Expense e = TestUtils.getExpense(i);
+        e.setUserId("1L");
+        e.setAccountId(1L);
+        expenses.add(e);
+      }
     }
 
+    expensesRepository.saveAll(expenses);
 
-    @Test
-    public void testSearchExpensesPartName() throws Exception {
-
-        List<Expense> found = expensesService.searchExpensesForUser("upl", 1L);
-        assertThat(found).isNotNull();
-        assertThat(found.size()).isEqualTo(18);
-
-    }
-
-    @Test
-    public void testSearchExpensesCompleteName() throws Exception {
-
-        List<Expense> found = expensesService.searchExpensesByName("uploaded");
-        assertThat(found).isNotNull();
-        assertThat(found.size()).isEqualTo(18);
-
-    }
+  }
 
 
-    @Test
-    public void testSearchExpensesInPeriod() throws Exception {
-        // three months should be okay
-        LocalDate before = LocalDate.now().minus(Period.ofMonths(3));
+  @Test
+  public void testSearchExpensesPartName() throws Exception {
 
-        List<Expense> found = expensesService.searchExpensesInPeriod(before.atStartOfDay().toInstant(ZoneOffset.UTC),
-                LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC));
-        assertThat(found).isNotNull();
-        assertThat(found.size()).isEqualTo(expensesForMonth * 4);
+    List<Expense> found = expensesService.searchExpensesForUser("upl", 1L);
+    assertThat(found).isNotNull();
+    assertThat(found.size()).isEqualTo(18);
 
-    }
+  }
 
-    @Test
-    public void testSearchExpensesCaseSenstive() throws Exception {
+  @Test
+  public void testSearchExpensesCompleteName() throws Exception {
 
-        List<Expense> found = expensesService.searchExpensesForUser("Uploaded", 1L);
-        assertThat(found).isNotNull();
-        assertThat(found.size()).isEqualTo(0);
+    List<Expense> found = expensesService.searchExpensesByName("uploaded");
+    assertThat(found).isNotNull();
+    assertThat(found.size()).isEqualTo(18);
 
-    }
+  }
 
 
-    @Test
-    public void testSearchExpensesNoText() throws Exception {
+  @Test
+  public void testSearchExpensesInPeriod() throws Exception {
+    // three months should be okay
+    LocalDate before = LocalDate.now().minus(Period.ofMonths(3));
 
-        List<Expense> found = expensesService.searchExpensesForUser("asdasd", 0L);
-        assertThat(found).isNotNull();
-        assertThat(found.size()).isEqualTo(0);
+    List<Expense> found = expensesService.searchExpensesInPeriod(before.atStartOfDay().toInstant(ZoneOffset.UTC),
+        LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC));
+    assertThat(found).isNotNull();
+    assertThat(found.size()).isEqualTo(expensesForMonth * 4);
 
-    }
+  }
 
+  @Test
+  public void testSearchExpensesCaseSenstive() throws Exception {
 
-    @Test
-    public void testSearchExpensesNoString() throws Exception {
+    List<Expense> found = expensesService.searchExpensesForUser("Uploaded", 1L);
+    assertThat(found).isNotNull();
+    assertThat(found.size()).isEqualTo(0);
 
-        List<Expense> found = expensesService.searchExpensesForUser(null, 0L);
-        assertThat(found).isNotNull();
-        assertThat(found.size()).isEqualTo(0);
-
-    }
-
-    public void testSearchExpensesNoUser() throws Exception {
-        List<Expense> found = expensesService.searchExpensesForUser("test", 0L);
-        assertThat(found).isNotNull();
-        assertThat(found.size()).isEqualTo(0);
-    }
+  }
 
 
-    @Test
-    public void readGlobalOverivew() throws Exception {
+  @Test
+  public void testSearchExpensesNoText() throws Exception {
+
+    List<Expense> found = expensesService.searchExpensesForUser("asdasd", 0L);
+    assertThat(found).isNotNull();
+    assertThat(found.size()).isEqualTo(0);
+
+  }
 
 
-        Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, mockPrincipal);
+  @Test
+  public void testSearchExpensesNoString() throws Exception {
 
-        assertThat(overView.isPresent()).isEqualTo(true);
-        assertThat(overView.get().getCountExpenses()).isEqualTo(18);
-        assertThat(overView.get().getRefAccountId()).isEqualTo(1L);
-        assertThat(overView.get().getTotalExpensesCount()).isEqualTo(18);
-        assertThat(overView.get().getTotal()).isEqualTo(BigDecimal.valueOf(180L));
+    List<Expense> found = expensesService.searchExpensesForUser(null, 0L);
+    assertThat(found).isNotNull();
+    assertThat(found.size()).isEqualTo(0);
 
+  }
 
-    }
-
-    @Test
-    public void readGlobalOverivewNoAuth() throws Exception {
-
-        Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, null);
-        assertThat(overView.isPresent()).isEqualTo(true);
+  public void testSearchExpensesNoUser() throws Exception {
+    List<Expense> found = expensesService.searchExpensesForUser("test", 0L);
+    assertThat(found).isNotNull();
+    assertThat(found.size()).isEqualTo(0);
+  }
 
 
-    }
-
-    @Test
-    public void readGlobalOverivewNoAcc() throws Exception {
-
-        Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(0L, mockPrincipal);
-        assertThat(overView.isPresent()).isEqualTo(true);
-
-    }
+  @Test
+  public void readGlobalOverivew() throws Exception {
 
 
-    @Test
-    public void testGetExpensesCount() throws Exception {
+    Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, mockPrincipal);
 
-        int count = expensesService.getExpensesCountForAcc(1L);
-        assertThat(count).isEqualTo(18);
-
-    }
-
-
-    @Test
-    public void testEditExpense() throws Exception {
-
-        Optional<Expense> expOpt = expensesService.getExpenseById(expenses.get(0).getId());
-        assertThat(expOpt.isPresent()).isTrue();
-        String newName = "Name edited";
-
-        Expense expense = expOpt.get();
-        expense.setName(newName);
-
-        expensesService.save(expense);
-
-        Optional<Expense> expOptEdited = expensesService.getExpenseById(expenses.get(0).getId());
-        assertThat(expOptEdited.isPresent()).isTrue();
-        assertThat(expOptEdited.get().getName()).isEqualTo(newName);
+    assertThat(overView.isPresent()).isEqualTo(true);
+    assertThat(overView.get().getCountExpenses()).isEqualTo(18);
+    assertThat(overView.get().getRefAccountId()).isEqualTo(1L);
+    assertThat(overView.get().getTotalExpensesCount()).isEqualTo(18);
+    assertThat(overView.get().getTotal()).isEqualTo(BigDecimal.valueOf(180L));
 
 
-    }
+  }
+
+  @Test
+  public void readGlobalOverivewNoAuth() throws Exception {
+
+    Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, null);
+    assertThat(overView.isPresent()).isEqualTo(true);
 
 
-    @Test
-    public void testGetExpensesCountNoId() throws Exception {
+  }
 
-        int count = expensesService.getExpensesCountForAcc(0);
-        assertThat(count).isEqualTo(0);
+  @Test
+  public void readGlobalOverivewNoAcc() throws Exception {
 
-    }
+    Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(0L, mockPrincipal);
+    assertThat(overView.isPresent()).isEqualTo(true);
+
+  }
 
 
-    @Test
-    public void testGetCategoryAndCount() throws Exception {
+  @Test
+  public void testGetExpensesCount() throws Exception {
 
-        List<CategoryAndCountOverview> result = expensesService.getCategoryAndCountForAcc(1L);
-        assertThat(result).isNotNull();
-        assertThat(result.size()).isEqualTo(1);
+    int count = expensesService.getExpensesCountForAcc(1L);
+    assertThat(count).isEqualTo(18);
 
-        logger.info(result.toString());
+  }
 
-    }
+
+  @Test
+  public void testEditExpense() throws Exception {
+
+    Optional<Expense> expOpt = expensesService.getExpenseById(expenses.get(0).getId());
+    assertThat(expOpt.isPresent()).isTrue();
+    String newName = "Name edited";
+
+    Expense expense = expOpt.get();
+    expense.setName(newName);
+
+    expensesService.save(expense);
+
+    Optional<Expense> expOptEdited = expensesService.getExpenseById(expenses.get(0).getId());
+    assertThat(expOptEdited.isPresent()).isTrue();
+    assertThat(expOptEdited.get().getName()).isEqualTo(newName);
+
+
+  }
+
+
+  @Test
+  public void testGetExpensesCountNoId() throws Exception {
+
+    int count = expensesService.getExpensesCountForAcc(0);
+    assertThat(count).isEqualTo(0);
+
+  }
+
+
+  @Test
+  public void testGetCategoryAndCount() throws Exception {
+
+    List<CategoryAndCountOverview> result = expensesService.getCategoryAndCountForAcc(1L);
+    assertThat(result).isNotNull();
+    assertThat(result.size()).isEqualTo(1);
+
+    logger.info(result.toString());
+
+  }
 
 
 }

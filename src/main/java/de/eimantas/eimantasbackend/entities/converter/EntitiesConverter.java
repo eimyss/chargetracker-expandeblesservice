@@ -15,80 +15,80 @@ import java.util.Optional;
 
 public class EntitiesConverter {
 
-    @Autowired
-    private ModelMapper modelMapper;
+  @Autowired
+  private ModelMapper modelMapper;
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
-    public ExpenseDTO getExpenseDTO(Optional<Expense> expenseOpt) {
+  public ExpenseDTO getExpenseDTO(Optional<Expense> expenseOpt) {
 
-        if (expenseOpt.isPresent()) {
-            Expense expense = expenseOpt.get();
-            ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
-            return postDto;
-
-        }
-        logger.info("expense is null");
-        return null;
+    if (expenseOpt.isPresent()) {
+      Expense expense = expenseOpt.get();
+      ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
+      return postDto;
 
     }
+    logger.info("expense is null");
+    return null;
+
+  }
 
 
-    public ExpenseDTO getExpenseDTO(Expense expense) {
+  public ExpenseDTO getExpenseDTO(Expense expense) {
 
-        if (expense != null) {
-            ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
-            return postDto;
-        }
-        logger.info("expense is null");
-        return null;
-
+    if (expense != null) {
+      ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
+      return postDto;
     }
+    logger.info("expense is null");
+    return null;
+
+  }
 
 
-    public Expense getExpenseFromDTO(ExpenseDTO dto) {
+  public Expense getExpenseFromDTO(ExpenseDTO dto) {
 
-        if (dto != null) {
-            Expense expense = modelMapper.<Expense>map(dto, Expense.class);
-            return expense;
-        }
-        logger.info("expense is null");
-        return null;
+    if (dto != null) {
+      Expense expense = modelMapper.<Expense>map(dto, Expense.class);
+      return expense;
     }
+    logger.info("expense is null");
+    return null;
+  }
 
 
-    public List<ExpenseDTO> convertExpenses(Collection<Expense> unexpenced) {
+  public List<ExpenseDTO> convertExpenses(Collection<Expense> unexpenced) {
 
-        List<ExpenseDTO> converted = new ArrayList<>();
+    List<ExpenseDTO> converted = new ArrayList<>();
 
-        unexpenced.forEach(exp -> converted.add(getExpenseDTO(exp)));
-        return converted;
+    unexpenced.forEach(exp -> converted.add(getExpenseDTO(exp)));
+    return converted;
+  }
+
+
+  public ExpenseDTO getExpenseDTOFromCSV(CSVExpenseDTO expense) {
+
+    if (expense != null) {
+      ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
+      return postDto;
     }
+    logger.info("expense is null");
+    return null;
+
+  }
 
 
-    public ExpenseDTO getExpenseDTOFromCSV(CSVExpenseDTO expense) {
+  public List<ExpenseDTO> convertCSVExpenses(List<CSVExpenseDTO> dtos) {
+    List<ExpenseDTO> converted = new ArrayList<>();
+    dtos.forEach(exp -> converted.add(getExpenseDTOFromCSV(exp)));
+    return converted;
+  }
 
-        if (expense != null) {
-            ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
-            return postDto;
-        }
-        logger.info("expense is null");
-        return null;
+  public List<Expense> convertExpenses(List<ExpenseDTO> dtosList) {
 
-    }
-
-
-    public List<ExpenseDTO> convertCSVExpenses(List<CSVExpenseDTO> dtos) {
-        List<ExpenseDTO> converted = new ArrayList<>();
-        dtos.forEach(exp -> converted.add(getExpenseDTOFromCSV(exp)));
-        return converted;
-    }
-
-    public List<Expense> convertExpenses(List<ExpenseDTO> dtosList) {
-
-        List<Expense> converted = new ArrayList<>();
-        dtosList.forEach(exp -> converted.add(getExpenseFromDTO(exp)));
-        return converted;
-    }
+    List<Expense> converted = new ArrayList<>();
+    dtosList.forEach(exp -> converted.add(getExpenseFromDTO(exp)));
+    return converted;
+  }
 }

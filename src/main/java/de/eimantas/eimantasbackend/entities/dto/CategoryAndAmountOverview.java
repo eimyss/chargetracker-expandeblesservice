@@ -14,6 +14,6 @@ import java.math.BigDecimal;
 @ApiModel(description = "")
 public class CategoryAndAmountOverview {
 
-    private ExpenseCategory name;
-    private BigDecimal amount;
+  private ExpenseCategory name;
+  private BigDecimal amount;
 }

@@ -12,29 +12,29 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ExpensesSender {
-    private final RabbitTemplate rabbitTemplate;
+  private final RabbitTemplate rabbitTemplate;
 
-    private ObjectMapper mapper = new ObjectMapper();
+  private ObjectMapper mapper = new ObjectMapper();
 
-    private final Exchange exchange;
+  private final Exchange exchange;
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
-
-
-    public ExpensesSender(RabbitTemplate rabbitTemplate, Exchange exchange) {
-        this.rabbitTemplate = rabbitTemplate;
-        this.exchange = exchange;
-
-        JavaTimeModule module = new JavaTimeModule();
-        mapper.registerModule(module);
-    }
+  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
-    public void createExpense(ExpenseDTO expense) throws JsonProcessingException {
-        // ... do some database stuff
-        String routingKey = "expenses.created";
+  public ExpensesSender(RabbitTemplate rabbitTemplate, Exchange exchange) {
+    this.rabbitTemplate = rabbitTemplate;
+    this.exchange = exchange;
 
-        logger.info("Sending to exchange: " + exchange.getName() + " with message: " + expense);
-        rabbitTemplate.convertAndSend(exchange.getName(), routingKey, mapper.writeValueAsString(expense));
-    }
+    JavaTimeModule module = new JavaTimeModule();
+    mapper.registerModule(module);
+  }
+
+
+  public void createExpense(ExpenseDTO expense) throws JsonProcessingException {
+    // ... do some database stuff
+    String routingKey = "expenses.created";
+
+    logger.info("Sending to exchange: " + exchange.getName() + " with message: " + expense);
+    rabbitTemplate.convertAndSend(exchange.getName(), routingKey, mapper.writeValueAsString(expense));
+  }
 }

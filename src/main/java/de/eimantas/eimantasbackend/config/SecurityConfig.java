@@ -18,49 +18,49 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 @KeycloakConfiguration
 class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
-    /**
-     * Registers the KeycloakAuthenticationProvider with the authentication manager.
-     */
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
+  /**
+   * Registers the KeycloakAuthenticationProvider with the authentication manager.
+   */
+  @Autowired
+  public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
 
-        // adding proper authority mapper for prefixing role with "ROLE_"
-        keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
+    // adding proper authority mapper for prefixing role with "ROLE_"
+    keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
 
-        auth.authenticationProvider(keycloakAuthenticationProvider);
-    }
+    auth.authenticationProvider(keycloakAuthenticationProvider);
+  }
 
-    /**
-     * Provide a session authentication strategy bean which should be of type
-     * RegisterSessionAuthenticationStrategy for public or confidential applications
-     * and NullAuthenticatedSessionStrategy for bearer-only applications.
-     */
-    @Bean
-    @Override
-    protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-        return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
-    }
+  /**
+   * Provide a session authentication strategy bean which should be of type
+   * RegisterSessionAuthenticationStrategy for public or confidential applications
+   * and NullAuthenticatedSessionStrategy for bearer-only applications.
+   */
+  @Bean
+  @Override
+  protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
+    return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
+  }
 
-    /**
-     * Use properties in application.properties instead of keycloak.json
-     */
-    @Bean
-    public KeycloakConfigResolver KeycloakConfigResolver() {
-        return new KeycloakSpringBootConfigResolver();
-    }
+  /**
+   * Use properties in application.properties instead of keycloak.json
+   */
+  @Bean
+  public KeycloakConfigResolver KeycloakConfigResolver() {
+    return new KeycloakSpringBootConfigResolver();
+  }
 
-    /**
-     * Secure appropriate endpoints
-     */
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
-        http.authorizeRequests()
-                .antMatchers("/expenses*").hasRole("user")
-                .antMatchers("/expense*").hasRole("user")
-                .antMatchers("/account*").hasRole("user")
-                .antMatchers("/users*").hasRole("user")
-                .anyRequest().permitAll().and().csrf().disable();
-    }
+  /**
+   * Secure appropriate endpoints
+   */
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    super.configure(http);
+    http.authorizeRequests()
+        .antMatchers("/expenses*").hasRole("user")
+        .antMatchers("/expense*").hasRole("user")
+        .antMatchers("/account*").hasRole("user")
+        .antMatchers("/users*").hasRole("user")
+        .anyRequest().permitAll().and().csrf().disable();
+  }
 }

@@ -11,18 +11,18 @@ import java.time.format.DateTimeFormatter;
 
 public class CustomLocalDateDeSerializer extends StdDeserializer<LocalDate> {
 
-    private static final long serialVersionUID = 1L;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+  private static final long serialVersionUID = 1L;
+  DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    protected CustomLocalDateDeSerializer() {
-        super(LocalDate.class);
-    }
+  protected CustomLocalDateDeSerializer() {
+    super(LocalDate.class);
+  }
 
 
-    @Override
-    public LocalDate deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-        return LocalDate.parse(jp.readValueAs(String.class),formatter);
-    }
+  @Override
+  public LocalDate deserialize(JsonParser jp, DeserializationContext ctxt)
+      throws IOException, JsonProcessingException {
+    return LocalDate.parse(jp.readValueAs(String.class), formatter);
+  }
 
 }

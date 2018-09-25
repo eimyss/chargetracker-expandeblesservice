@@ -21,27 +21,27 @@ import java.util.List;
 public class FileProcessor {
 
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private  SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
+  private SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
 
-    public <T> List<T> loadObjectList(Class<T> type, String fileName) {
-        try {
-            CsvSchema bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator(';');
-            CsvMapper mapper = (CsvMapper) new CsvMapper()
-          	.registerModule(new ParameterNamesModule())
-                    .registerModule(new Jdk8Module())
-                 .registerModule(new JavaTimeModule())
-                .registerModule(new Jackson2HalModule())
-            .setDateFormat(df);
-            File file = new ClassPathResource(fileName).getFile();
-            MappingIterator<T> readValues =
-                    mapper.reader(type).with(bootstrapSchema).readValues(file);
-            return readValues.readAll();
-        } catch (Exception e) {
-            logger.error("Error occurred while loading object list from file " + fileName, e);
-            return Collections.emptyList();
-        }
+  public <T> List<T> loadObjectList(Class<T> type, String fileName) {
+    try {
+      CsvSchema bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator(';');
+      CsvMapper mapper = (CsvMapper) new CsvMapper()
+          .registerModule(new ParameterNamesModule())
+          .registerModule(new Jdk8Module())
+          .registerModule(new JavaTimeModule())
+          .registerModule(new Jackson2HalModule())
+          .setDateFormat(df);
+      File file = new ClassPathResource(fileName).getFile();
+      MappingIterator<T> readValues =
+          mapper.reader(type).with(bootstrapSchema).readValues(file);
+      return readValues.readAll();
+    } catch (Exception e) {
+      logger.error("Error occurred while loading object list from file " + fileName, e);
+      return Collections.emptyList();
     }
+  }
 
 }

@@ -10,17 +10,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserFeignClientInterceptor implements RequestInterceptor {
-	private static final String AUTHORIZATION_HEADER = "Authorization";
-	private static final String BEARER_TOKEN_TYPE = "Bearer";
+  private static final String AUTHORIZATION_HEADER = "Authorization";
+  private static final String BEARER_TOKEN_TYPE = "Bearer";
 
-	@Override
-	public void apply(RequestTemplate template) {
-		SecurityContext securityContext = SecurityContextHolder.getContext();
-		Authentication authentication = securityContext.getAuthentication();
+  @Override
+  public void apply(RequestTemplate template) {
+    SecurityContext securityContext = SecurityContextHolder.getContext();
+    Authentication authentication = securityContext.getAuthentication();
 
-		if (authentication != null && authentication instanceof KeycloakAuthenticationToken) {
-			KeycloakAuthenticationToken details = (KeycloakAuthenticationToken) authentication;
-			template.header(AUTHORIZATION_HEADER, String.format("%s %s", BEARER_TOKEN_TYPE, ((KeycloakAuthenticationToken) authentication).getAccount().getKeycloakSecurityContext().getTokenString()));
-		}
-	}
+    if (authentication != null && authentication instanceof KeycloakAuthenticationToken) {
+      KeycloakAuthenticationToken details = (KeycloakAuthenticationToken) authentication;
+      template.header(AUTHORIZATION_HEADER, String.format("%s %s", BEARER_TOKEN_TYPE, ((KeycloakAuthenticationToken) authentication).getAccount().getKeycloakSecurityContext().getTokenString()));
+    }
+  }
 }

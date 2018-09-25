@@ -13,6 +13,6 @@ import java.math.BigDecimal;
 @ApiModel(description = "")
 public class MonthAndAmountOverview {
 
-    private String month;
-    private BigDecimal amount;
+  private String month;
+  private BigDecimal amount;
 }

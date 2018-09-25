@@ -13,18 +13,18 @@ import java.time.format.DateTimeFormatter;
 
 public class CustomInstantDeserializer extends StdDeserializer<Instant> {
 
-    private static final long serialVersionUID = 1L;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+  private static final long serialVersionUID = 1L;
+  DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    protected CustomInstantDeserializer() {
-        super(Instant.class);
-    }
+  protected CustomInstantDeserializer() {
+    super(Instant.class);
+  }
 
 
-    @Override
-    public Instant deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-        return LocalDate.parse(jp.readValueAs(String.class),formatter).atStartOfDay().toInstant(ZoneOffset.UTC);
-    }
+  @Override
+  public Instant deserialize(JsonParser jp, DeserializationContext ctxt)
+      throws IOException, JsonProcessingException {
+    return LocalDate.parse(jp.readValueAs(String.class), formatter).atStartOfDay().toInstant(ZoneOffset.UTC);
+  }
 
 }

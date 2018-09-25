@@ -33,88 +33,88 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class ProcessingServiceTest {
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Inject
-    private FileProcessor dataProcessor;
+  @Inject
+  private FileProcessor dataProcessor;
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    @Autowired
-    EntitiesConverter entitiesConverter;
+  @Autowired
+  EntitiesConverter entitiesConverter;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-
-    @Before
-    public void setup() throws Exception {
-
-        this.mockMvc = webAppContextSetup(webApplicationContext).build();
-    }
+  @Autowired
+  private WebApplicationContext webApplicationContext;
 
 
-    @Test
-    public void dateFormatParse() throws Exception {
+  @Before
+  public void setup() throws Exception {
+
+    this.mockMvc = webAppContextSetup(webApplicationContext).build();
+  }
 
 
-        String date = "24.08.2018";
-        SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
-
-        Date datum = df.parse(date);
+  @Test
+  public void dateFormatParse() throws Exception {
 
 
-        assertThat(datum).isNotNull();
-        logger.info("Date: " + datum.toString());
+    String date = "24.08.2018";
+    SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
 
-    }
-
-    @Test
-    @Ignore
-    public void testReadData() throws Exception {
-
-        List<CSVExpenseDTO> dtos = dataProcessor.loadObjectList(CSVExpenseDTO.class, "data-small.csv");
-
-        assertThat(dtos).isNotNull();
-        logger.info("size: " + dtos.size());
-
-    }
+    Date datum = df.parse(date);
 
 
-    @Test
-    @Ignore
-    public void testProcessReadData() throws Exception {
+    assertThat(datum).isNotNull();
+    logger.info("Date: " + datum.toString());
 
-        List<CSVExpenseDTO> dtos = dataProcessor.loadObjectList(CSVExpenseDTO.class, "data-small.csv");
+  }
 
-        assertThat(dtos).isNotNull();
-        logger.info("size: " + dtos.size());
+  @Test
+  @Ignore
+  public void testReadData() throws Exception {
 
-    }
+    List<CSVExpenseDTO> dtos = dataProcessor.loadObjectList(CSVExpenseDTO.class, "data-small.csv");
 
-    @Test
-    @Ignore
-    public void testConvertProcessReadData() throws Exception {
+    assertThat(dtos).isNotNull();
+    logger.info("size: " + dtos.size());
 
-        List<CSVExpenseDTO> dtos = dataProcessor.loadObjectList(CSVExpenseDTO.class, "data-small.csv");
+  }
 
-        assertThat(dtos).isNotNull();
-        logger.info("size: " + dtos.size());
 
-        List<ExpenseDTO> dtosconverted = entitiesConverter.convertCSVExpenses(dtos);
+  @Test
+  @Ignore
+  public void testProcessReadData() throws Exception {
 
-        assertThat(dtosconverted).isNotNull();
-        logger.info(" dtosconverted size: " + dtosconverted.size());
+    List<CSVExpenseDTO> dtos = dataProcessor.loadObjectList(CSVExpenseDTO.class, "data-small.csv");
 
-        assertThat(dtosconverted.size()).isEqualTo(dtos.size());
+    assertThat(dtos).isNotNull();
+    logger.info("size: " + dtos.size());
 
-        dtosconverted.forEach(dto -> {
-            dto.setAccountId(1L);
-            dto.setUserId("1L");
-            dto.setExpensable(true);
-            dto.setCategory("IMPORTED");
-        });
+  }
 
-    }
+  @Test
+  @Ignore
+  public void testConvertProcessReadData() throws Exception {
+
+    List<CSVExpenseDTO> dtos = dataProcessor.loadObjectList(CSVExpenseDTO.class, "data-small.csv");
+
+    assertThat(dtos).isNotNull();
+    logger.info("size: " + dtos.size());
+
+    List<ExpenseDTO> dtosconverted = entitiesConverter.convertCSVExpenses(dtos);
+
+    assertThat(dtosconverted).isNotNull();
+    logger.info(" dtosconverted size: " + dtosconverted.size());
+
+    assertThat(dtosconverted.size()).isEqualTo(dtos.size());
+
+    dtosconverted.forEach(dto -> {
+      dto.setAccountId(1L);
+      dto.setUserId("1L");
+      dto.setExpensable(true);
+      dto.setCategory("IMPORTED");
+    });
+
+  }
 
 }

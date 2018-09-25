@@ -28,33 +28,33 @@ import java.nio.charset.Charset;
 public class ExpensesMessagingTest {
 
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
-            MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
+  private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
+      MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    @Autowired
-    ExpensesSender expensesSender;
+  @Autowired
+  ExpensesSender expensesSender;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-
-    @Before
-    public void setup() throws Exception {
-
-    }
+  @Autowired
+  private WebApplicationContext webApplicationContext;
 
 
-    @Test
-    @Ignore
-    public void testQueue() throws Exception {
+  @Before
+  public void setup() throws Exception {
 
-        expensesSender.createExpense(TestUtils.getExpenseDTO());
+  }
 
-    }
+
+  @Test
+  @Ignore
+  public void testQueue() throws Exception {
+
+    expensesSender.createExpense(TestUtils.getExpenseDTO());
+
+  }
 
 
 }

@@ -26,59 +26,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DateHelperTest {
 
 
-    @Before
-	public void setup() {
+  @Before
+  public void setup() {
 
 
-	}
+  }
 
 
-	@Test
-	public void testIsInMonthWayBefore() {
+  @Test
+  public void testIsInMonthWayBefore() {
 
 
-        LocalDateTime today= LocalDateTime.now();
-        LocalDateTime ago = today.minus(Period.ofMonths(3));
+    LocalDateTime today = LocalDateTime.now();
+    LocalDateTime ago = today.minus(Period.ofMonths(3));
 
-        boolean answer =   DateHelper.isInMonth(6,ago.toInstant(ZoneOffset.UTC));
-        assertThat(answer).isEqualTo(false);
+    boolean answer = DateHelper.isInMonth(6, ago.toInstant(ZoneOffset.UTC));
+    assertThat(answer).isEqualTo(false);
 
-	}
-
-
-    @Test
-    public void testIsInCurrentMonth() {
-
-        LocalDateTime today= LocalDateTime.now();
-        LocalDateTime ago = today.minus(Period.ofMonths(0));
-
-        boolean answer =   DateHelper.isInMonth(6,ago.toInstant(ZoneOffset.UTC));
-        assertThat(answer).isEqualTo(false);
-
-    }
+  }
 
 
-    @Test
-    public void testIsNotInMonth() {
+  @Test
+  public void testIsInCurrentMonth() {
 
-        LocalDateTime today= LocalDateTime.now();
-        LocalDateTime ago = today.minus(Period.ofMonths(9));
+    LocalDateTime today = LocalDateTime.now();
+    LocalDateTime ago = today.minus(Period.ofMonths(0));
 
-        boolean answer= DateHelper.isInMonth(6,ago.toInstant(ZoneOffset.UTC));
-        assertThat(answer).isEqualTo(false);
+    boolean answer = DateHelper.isInMonth(6, ago.toInstant(ZoneOffset.UTC));
+    assertThat(answer).isEqualTo(false);
 
-    }
+  }
 
-    @Test
-    public void testIsInMonthGrenze() {
 
-        LocalDateTime today= LocalDateTime.now();
-        LocalDateTime ago = today.minus(Period.ofMonths(6));
+  @Test
+  public void testIsNotInMonth() {
 
-        boolean answer =  DateHelper.isInMonth(6,ago.toInstant(ZoneOffset.UTC));
-        assertThat(answer).isEqualTo(true);
+    LocalDateTime today = LocalDateTime.now();
+    LocalDateTime ago = today.minus(Period.ofMonths(9));
 
-    }
+    boolean answer = DateHelper.isInMonth(6, ago.toInstant(ZoneOffset.UTC));
+    assertThat(answer).isEqualTo(false);
+
+  }
+
+  @Test
+  public void testIsInMonthGrenze() {
+
+    LocalDateTime today = LocalDateTime.now();
+    LocalDateTime ago = today.minus(Period.ofMonths(6));
+
+    boolean answer = DateHelper.isInMonth(6, ago.toInstant(ZoneOffset.UTC));
+    assertThat(answer).isEqualTo(true);
+
+  }
 
 
 }

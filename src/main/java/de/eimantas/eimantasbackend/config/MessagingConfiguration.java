@@ -11,15 +11,14 @@ import org.springframework.context.annotation.Configuration;
 public class MessagingConfiguration {
 
 
+  @Bean
+  public Exchange eventExchange() {
+    return new TopicExchange("eventExchange");
+  }
 
-    @Bean
-    public Exchange eventExchange() {
-        return new TopicExchange("eventExchange");
-    }
-
-    @Bean
-    public ExpensesSender expensesSender(RabbitTemplate rabbitTemplate, Exchange eventExchange) {
-        return new ExpensesSender(rabbitTemplate, eventExchange);
-    }
+  @Bean
+  public ExpensesSender expensesSender(RabbitTemplate rabbitTemplate, Exchange eventExchange) {
+    return new ExpensesSender(rabbitTemplate, eventExchange);
+  }
 
 }

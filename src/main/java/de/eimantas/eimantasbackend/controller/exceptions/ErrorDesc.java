@@ -8,6 +8,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class ErrorDesc {
 
-    String message;
+  String message;
 
 }

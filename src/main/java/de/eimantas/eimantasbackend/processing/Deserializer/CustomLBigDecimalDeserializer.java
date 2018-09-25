@@ -14,22 +14,22 @@ import java.util.Locale;
 
 public class CustomLBigDecimalDeserializer extends StdDeserializer<BigDecimal> {
 
-    private static final long serialVersionUID = 1L;
-    Locale de = new Locale("de","DE");
-    private DecimalFormat nf;
+  private static final long serialVersionUID = 1L;
+  Locale de = new Locale("de", "DE");
+  private DecimalFormat nf;
 
 
-    protected CustomLBigDecimalDeserializer() {
-        super(BigDecimal.class);
-        nf = (DecimalFormat) NumberFormat.getInstance(de);
-        nf.setParseBigDecimal(true);
-    }
+  protected CustomLBigDecimalDeserializer() {
+    super(BigDecimal.class);
+    nf = (DecimalFormat) NumberFormat.getInstance(de);
+    nf.setParseBigDecimal(true);
+  }
 
 
-    @Override
-    public BigDecimal deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-     return (BigDecimal)nf.parse(jp.readValueAs(String.class), new ParsePosition(0));
-    }
+  @Override
+  public BigDecimal deserialize(JsonParser jp, DeserializationContext ctxt)
+      throws IOException, JsonProcessingException {
+    return (BigDecimal) nf.parse(jp.readValueAs(String.class), new ParsePosition(0));
+  }
 
 }

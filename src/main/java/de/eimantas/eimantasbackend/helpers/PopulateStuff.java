@@ -13,76 +13,76 @@ import java.time.ZoneOffset;
 public class PopulateStuff {
 
 
-    public static Expense getExpense() {
+  public static Expense getExpense() {
 
-        Expense exp = new Expense();
-        exp.setName("uploaded");
-        exp.setCategory(ExpenseCategory.STEUER);
-        exp.setBetrag(BigDecimal.TEN);
-        exp.setOrt("Mainz");
-        exp.setCreateDate(Instant.now());
-        return exp;
+    Expense exp = new Expense();
+    exp.setName("uploaded");
+    exp.setCategory(ExpenseCategory.STEUER);
+    exp.setBetrag(BigDecimal.TEN);
+    exp.setOrt("Mainz");
+    exp.setCreateDate(Instant.now());
+    return exp;
 
-    }
-
-
-    public static Expense getFullExpense() {
-        Expense exp = new Expense();
-        exp.setName("uploaded");
-        exp.setCategory(ExpenseCategory.STEUER);
-        exp.setBetrag(BigDecimal.TEN);
-        exp.setExpensable(true);
-        exp.setCreateDate(Instant.now());
-        exp.setOrt("Mainz");
-        exp.setAccountId(1L);
-        exp.setUserId("asdasd-12321");
-
-        return exp;
-    }
+  }
 
 
-    public static ExpenseDTO getExpenseDTO(long accountId) {
+  public static Expense getFullExpense() {
+    Expense exp = new Expense();
+    exp.setName("uploaded");
+    exp.setCategory(ExpenseCategory.STEUER);
+    exp.setBetrag(BigDecimal.TEN);
+    exp.setExpensable(true);
+    exp.setCreateDate(Instant.now());
+    exp.setOrt("Mainz");
+    exp.setAccountId(1L);
+    exp.setUserId("asdasd-12321");
 
-        ExpenseDTO exp = getExpenseDTO();
-        exp.setAccountId(accountId);
-        return exp;
-    }
-
-
-    public static ExpenseDTO getExpenseDTO() {
-
-        ExpenseDTO exp = new ExpenseDTO();
-        exp.setName("uploaded");
-        exp.setCategory(ExpenseCategory.STEUER.toString());
-        exp.setBetrag(BigDecimal.TEN);
-        exp.setExpensable(true);
-        exp.setExpensed(false);
-        exp.setValid(false);
-        exp.setPeriodic(false);
-        exp.setCreateDate(Instant.now());
-        exp.setOrt("Mainz");
-
-        return exp;
-
-    }
+    return exp;
+  }
 
 
-    public static ExpenseDTO getExpenseDTO(Long accountID) {
+  public static ExpenseDTO getExpenseDTO(long accountId) {
 
-        ExpenseDTO exp = getExpenseDTO();
-        exp.setAccountId(accountID);
-
-        return exp;
-
-    }
+    ExpenseDTO exp = getExpenseDTO();
+    exp.setAccountId(accountId);
+    return exp;
+  }
 
 
-    public static Expense getExpense(int monthAgo) {
-        Expense e = getExpense();
-        LocalDate date = LocalDate.now().minus(Period.ofMonths(monthAgo));
-        e.setCreateDate(date.atStartOfDay().toInstant(ZoneOffset.UTC));
-        return e;
-    }
+  public static ExpenseDTO getExpenseDTO() {
+
+    ExpenseDTO exp = new ExpenseDTO();
+    exp.setName("uploaded");
+    exp.setCategory(ExpenseCategory.STEUER.toString());
+    exp.setBetrag(BigDecimal.TEN);
+    exp.setExpensable(true);
+    exp.setExpensed(false);
+    exp.setValid(false);
+    exp.setPeriodic(false);
+    exp.setCreateDate(Instant.now());
+    exp.setOrt("Mainz");
+
+    return exp;
+
+  }
+
+
+  public static ExpenseDTO getExpenseDTO(Long accountID) {
+
+    ExpenseDTO exp = getExpenseDTO();
+    exp.setAccountId(accountID);
+
+    return exp;
+
+  }
+
+
+  public static Expense getExpense(int monthAgo) {
+    Expense e = getExpense();
+    LocalDate date = LocalDate.now().minus(Period.ofMonths(monthAgo));
+    e.setCreateDate(date.atStartOfDay().toInstant(ZoneOffset.UTC));
+    return e;
+  }
 
 
 }

@@ -22,39 +22,39 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 @Configuration
 public class AccountsClientConfig {
 
-	@Value("${service.feign.connectTimeout:60000}")
-	private int connectTimeout;
+  @Value("${service.feign.connectTimeout:60000}")
+  private int connectTimeout;
 
-	@Value("${service.feign.readTimeOut:60000}")
-	private int readTimeout;
-
-
-	@Bean
-    Logger.Level feignLoggerLevel() {
-        return Logger.Level.FULL;
-    }
-
-	@Bean
-	public Decoder feignDecoder() {
-		HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter(customObjectMapper());
-		ObjectFactory<HttpMessageConverters> objectFactory = () -> new HttpMessageConverters(jacksonConverter);
-		return new ResponseEntityDecoder(new SpringDecoder(objectFactory));
-	}
-
-	public ObjectMapper customObjectMapper() {
-		ObjectMapper customMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
-				.registerModule(new ParameterNamesModule())
-				.registerModule(new Jdk8Module())
-				.registerModule(new JavaTimeModule())
-				.registerModule(new Jackson2HalModule());
+  @Value("${service.feign.readTimeOut:60000}")
+  private int readTimeout;
 
 
-		return customMapper;
-	}
+  @Bean
+  Logger.Level feignLoggerLevel() {
+    return Logger.Level.FULL;
+  }
+
+  @Bean
+  public Decoder feignDecoder() {
+    HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter(customObjectMapper());
+    ObjectFactory<HttpMessageConverters> objectFactory = () -> new HttpMessageConverters(jacksonConverter);
+    return new ResponseEntityDecoder(new SpringDecoder(objectFactory));
+  }
+
+  public ObjectMapper customObjectMapper() {
+    ObjectMapper customMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
+        .registerModule(new ParameterNamesModule())
+        .registerModule(new Jdk8Module())
+        .registerModule(new JavaTimeModule())
+        .registerModule(new Jackson2HalModule());
 
 
-	@Bean
-	public Request.Options options() {
-		return new Request.Options(connectTimeout, readTimeout);
-	}
+    return customMapper;
+  }
+
+
+  @Bean
+  public Request.Options options() {
+    return new Request.Options(connectTimeout, readTimeout);
+  }
 }

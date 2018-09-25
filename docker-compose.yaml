@@ -1,13 +1,13 @@
 version: '3'
 
 services:
-   ref:
-     image: eimyss/eimantas-backend:latest
-     network_mode: host
-     environment:
-        - stage=ref
-   prod:
-     image: eimyss/eimantas-backend:latest
-     network_mode: host
-     environment:
-        - stage=prod
+  ref:
+    image: eimyss/eimantas-backend:latest
+    network_mode: host
+    environment:
+    - stage=ref
+  prod:
+    image: eimyss/eimantas-backend:latest
+    network_mode: host
+    environment:
+    - stage=prod

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @ApiModel(description = "")
 public class CategoryAndCountOverview {
 
-    private ExpenseCategory category;
-    private long count;
+  private ExpenseCategory category;
+  private long count;
 
 }

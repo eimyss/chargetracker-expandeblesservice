@@ -18,53 +18,54 @@ import java.util.Iterator;
 import java.util.List;
 
 public class SecurityUtils {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SecurityUtils.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SecurityUtils.class);
 
-    public static String getJsonString() throws IOException {
+  public static String getJsonString() throws IOException {
 
-        logger.info("starting request");
-        HttpClient client= new DefaultHttpClient();
-        HttpPost request = new HttpPost("http://192.168.123.157:8180/auth/realms/expenses/protocol/openid-connect/token");
-        List<NameValuePair> pairs = new ArrayList<NameValuePair>();
-        pairs.add(new BasicNameValuePair("client_id", "expenses-app"));
-        pairs.add(new BasicNameValuePair("username", "test"));
-        pairs.add(new BasicNameValuePair("password", "test"));
-        pairs.add(new BasicNameValuePair("grant_type", "password"));
-        request.setEntity(new UrlEncodedFormEntity(pairs ));
-        HttpResponse resp = client.execute(request);
+    logger.info("starting request");
+    HttpClient client = new DefaultHttpClient();
+    HttpPost request = new HttpPost("http://192.168.123.157:8180/auth/realms/expenses/protocol/openid-connect/token");
+    List<NameValuePair> pairs = new ArrayList<NameValuePair>();
+    pairs.add(new BasicNameValuePair("client_id", "expenses-app"));
+    pairs.add(new BasicNameValuePair("username", "test"));
+    pairs.add(new BasicNameValuePair("password", "test"));
+    pairs.add(new BasicNameValuePair("grant_type", "password"));
+    request.setEntity(new UrlEncodedFormEntity(pairs));
+    HttpResponse resp = client.execute(request);
 
-        String response = IOUtils.toString(resp.getEntity().getContent());
+    String response = IOUtils.toString(resp.getEntity().getContent());
 
-        logger.info("entity content:" +response);
+    logger.info("entity content:" + response);
 
-        return response;
+    return response;
+  }
+
+
+  public static String getOnlyToken() {
+
+    JSONObject parser = null;
+    try {
+      parser = new JSONObject(getJsonString());
+      return parser.getString("access_token");
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "error";
     }
 
+  }
 
-    public static String getOnlyToken() {
+  public static Iterator getTokenInfo() throws IOException, JSONException {
 
-        JSONObject parser = null;
-        try {
-            parser = new JSONObject(getJsonString());
-            return parser.getString("access_token");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "error";
-        }
+    JSONObject parser = new JSONObject(getJsonString());
+    return parser.keys();
 
-    }
-    public static Iterator getTokenInfo() throws IOException, JSONException {
+  }
 
-        JSONObject parser = new JSONObject(getJsonString());
-        return parser.keys();
+  public static String getValueFromToken(String name) throws IOException, JSONException {
 
-    }
+    JSONObject parser = new JSONObject(getJsonString());
+    return parser.getString(name);
 
-    public static String getValueFromToken(String name) throws IOException, JSONException {
-
-        JSONObject parser = new JSONObject(getJsonString());
-        return parser.getString(name);
-
-    }
+  }
 
 }
