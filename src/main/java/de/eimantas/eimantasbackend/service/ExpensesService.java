@@ -11,6 +11,7 @@ import de.eimantas.eimantasbackend.entities.Specification.SearchCriteria;
 import de.eimantas.eimantasbackend.entities.converter.EntitiesConverter;
 import de.eimantas.eimantasbackend.entities.dto.*;
 import de.eimantas.eimantasbackend.helpers.DateHelper;
+import de.eimantas.eimantasbackend.processing.OverviewProcessor;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.LoggerFactory;
@@ -25,8 +26,6 @@ import java.time.ZoneOffset;
 import java.time.temporal.TemporalField;
 import java.time.temporal.WeekFields;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -39,6 +38,9 @@ public class ExpensesService {
     SecurityService securityService;
     @Inject
     ExpenseRepository expenseRepository;
+
+    @Inject
+    OverviewProcessor processor;
 
     @Inject
     AccountsClient accountsClient;
@@ -87,7 +89,7 @@ public class ExpensesService {
         overView.setActive(true);
 
 
-        if(!expensesList.isEmpty()) {
+        if (!expensesList.isEmpty()) {
             BigDecimal sum = expensesList.stream().filter(expense -> !expense.isExpensed()).map(Expense::getBetrag).reduce(BigDecimal::add).get();
             overView.setTotal(sum);
         }
@@ -115,19 +117,6 @@ public class ExpensesService {
 
     // we still need account id, because in dropbox you can select multiple accunts
     public Optional<AccountOverViewDTO> getExpensesOverview(long accountID, KeycloakAuthenticationToken authentication) {
-
-        // is active
-        // total expenses
-        // expensed account
-        // account name
-        // map<category, count>
-        // map <period,  map<category, amount>>
-
-        if (authentication == null)
-            throw new SecurityException("Principal cannot be null");
-
-        if (accountID == 0)
-            throw new IllegalArgumentException("account Id cannot be empty");
 
         AccountOverViewDTO dto = new AccountOverViewDTO();
         dto.setRefAccountId(accountID);
@@ -180,17 +169,8 @@ public class ExpensesService {
             return BigDecimal.ZERO;
         }
 
-
         Collection<Expense> expensesList = expenseRepository.findByAccountId(id);
-
-        if (expensesList.size() > 0) {
-            // sum of all values that are already expensed
-            BigDecimal sum = expensesList.stream().filter(expense -> !expense.isExpensed()).map(Expense::getBetrag).reduce(BigDecimal::add).get();
-            return sum;
-        }
-
-        logger.info("no expenses found for acc id: " + id);
-        return BigDecimal.ZERO;
+        return processor.getTotalAmountForExpenses(expensesList);
 
     }
 
@@ -293,78 +273,19 @@ public class ExpensesService {
 
         dto.setMonthBack(monthsGoBack);
         dto.setUserId(userId);
-        accountsClient.getAccountList().forEach(acc -> overview.put(acc, getPerMonthOverView(monthsGoBack, acc, dto)));
+
+        Collection<Long> accountIds = accountsClient.getAccountList();
+
+        for (Long accId : accountIds) {
+
+            Collection<Expense> expenses = expenseRepository.findByAccountId(accId);
+            overview.put(accId, processor.getPerMonthOverView(monthsGoBack, expenses, dto));
+
+        }
+
         dto.setOverview(overview);
 
         return dto;
     }
 
-
-    /**
-     * Gets overview for expenses for given months back
-     *
-     * @param monthsGoBack
-     * @param dto
-     * @return
-     */
-    public List<MonthAndAmountOverview> getPerMonthOverView(int monthsGoBack, long accId, AllAccountsOverViewDTO dto) {
-        // TODO
-
-        logger.info("getting overview for acc: " + accId + " for manths ago: " + monthsGoBack);
-        List<MonthAndAmountOverview> list = new ArrayList<>();
-
-        Collection<Expense> expensesForAccount = expenseRepository.findByAccountId(accId);
-
-
-        if (expensesForAccount != null) {
-            logger.info("account has: " + expensesForAccount.size() + " expenses");
-
-            // ist DB faster than the stuff ?
-            for (int i = monthsGoBack; i > 0; i--) {
-                List<Expense> qualified;
-                List<Expense> unexpenced;
-
-                Stream<Expense> expensesStream = expensesForAccount.stream();
-
-                int finalI = i;
-                // get expenses that are fitting the date
-                qualified = expensesStream.filter(new Predicate<Expense>() {
-                    @Override
-                    public boolean test(Expense expense) {
-                        return DateHelper.isInMonth(finalI, expense.getCreateDate());
-                    }
-                }).collect(Collectors.toList());
-
-                logger.info("found " + qualified.size() + " qualified expenses");
-
-                unexpenced = qualified.stream().filter(new Predicate<Expense>() {
-                    @Override
-                    public boolean test(Expense expense) {
-                        return !expense.isExpensed();
-                    }
-                }).collect(Collectors.toList());
-
-                logger.info("found " + unexpenced.size() + " not expensed expenses");
-
-                if (dto != null) {
-                    logger.warn("passed dto is null, expenses wont be added");
-                    // we check for each month, and add if not expensed
-                    dto.addNotExpenced(converter.convertExpenses(unexpenced));
-                }
-
-                MonthAndAmountOverview overview = new MonthAndAmountOverview();
-                overview.setMonth(DateHelper.getMonthNameForAgo(finalI));
-                if (qualified.size() > 0) {
-                    // this doesnt work, array is empty.
-                    overview.setAmount(qualified.stream().map(Expense::getBetrag).reduce(BigDecimal::add).get());
-                }
-
-                list.add(overview);
-            }
-
-        } else {
-            logger.info("acc " + accId + " has no expenses");
-        }
-        return list;
-    }
 }

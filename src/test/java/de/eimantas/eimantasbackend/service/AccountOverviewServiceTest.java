@@ -6,6 +6,7 @@ import de.eimantas.eimantasbackend.entities.AccountOverView;
 import de.eimantas.eimantasbackend.entities.Expense;
 import de.eimantas.eimantasbackend.entities.dto.AllAccountsOverViewDTO;
 import de.eimantas.eimantasbackend.entities.dto.MonthAndAmountOverview;
+import de.eimantas.eimantasbackend.processing.OverviewProcessor;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -63,9 +64,12 @@ public class AccountOverviewServiceTest {
     private ExpensesService expensesService;
 
     @Autowired
+    private OverviewProcessor overviewProcessor;
+
+    @Autowired
     private WebApplicationContext webApplicationContext;
 
-
+    private List<Expense> expenses;
     private int monthsGoBack = 6;
     private int expensesForMonth = 3;
 
@@ -99,7 +103,7 @@ public class AccountOverviewServiceTest {
         this.expensesRepository.deleteAll();
 
 
-        List<Expense> expenses = new ArrayList<>();
+         expenses = new ArrayList<>();
 
         // populate acc with expenses
         for (int i = 0; i < monthsGoBack; i++) {
@@ -150,11 +154,10 @@ public class AccountOverviewServiceTest {
     }
 
     @Test
-    @Ignore
     public void readNonExistingOverivew() throws Exception {
 
         Optional<AccountOverView> overView = expensesService.getOverViewForAccount(33, mockPrincipal);
-        assertThat(overView.isPresent()).isEqualTo(false);
+        assertThat(overView.isPresent()).isEqualTo(true);
 
     }
 
@@ -169,7 +172,6 @@ public class AccountOverviewServiceTest {
 
     @Test
     @Ignore
-    @Transactional
     public void readAllAccountsOverivew() throws Exception {
 
         AllAccountsOverViewDTO dto = expensesService.getAllACccountsOverViewForUser(mockPrincipal);
@@ -198,7 +200,7 @@ public class AccountOverviewServiceTest {
     @Test
     public void readAllMonthsOverview() throws Exception {
         AllAccountsOverViewDTO empty = new AllAccountsOverViewDTO();
-        List<MonthAndAmountOverview> dto = expensesService.getPerMonthOverView(6, 1L, empty);
+        List<MonthAndAmountOverview> dto = overviewProcessor.getPerMonthOverView(6, expenses, empty);
         assertThat(dto).isNotNull();
         assertThat(dto.size()).isEqualTo(6);
 
@@ -214,7 +216,7 @@ public class AccountOverviewServiceTest {
     @Test
     public void readAllMonthsOverviewNoDto() throws Exception {
 
-        List<MonthAndAmountOverview> dto = expensesService.getPerMonthOverView(6, 1L, null);
+        List<MonthAndAmountOverview> dto = overviewProcessor.getPerMonthOverView(6, expenses, null);
         assertThat(dto).isNotNull();
         assertThat(dto.size()).isEqualTo(6);
 
@@ -227,8 +229,8 @@ public class AccountOverviewServiceTest {
     @Test
     public void readAllMonthsOverviewNoAcc() throws Exception {
 
-        List<MonthAndAmountOverview> dto = expensesService.getPerMonthOverView(6, 0, new AllAccountsOverViewDTO());
-        assertThat(dto).isEmpty();
+        List<MonthAndAmountOverview> dto = overviewProcessor.getPerMonthOverView(6, expenses, new AllAccountsOverViewDTO());
+        assertThat(dto).isNotNull();
 
     }
 

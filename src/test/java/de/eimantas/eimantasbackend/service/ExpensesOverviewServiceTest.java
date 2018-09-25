@@ -177,20 +177,20 @@ public class ExpensesOverviewServiceTest {
 
     }
 
-    @Test(expected = SecurityException.class)
+    @Test
     public void readGlobalOverivewNoAuth() throws Exception {
 
         Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, null);
-        assertThat(overView.isPresent()).isEqualTo(false);
+        assertThat(overView.isPresent()).isEqualTo(true);
 
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void readGlobalOverivewNoAcc() throws Exception {
 
         Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(0L, mockPrincipal);
-        assertThat(overView.isPresent()).isEqualTo(false);
+        assertThat(overView.isPresent()).isEqualTo(true);
 
     }
 

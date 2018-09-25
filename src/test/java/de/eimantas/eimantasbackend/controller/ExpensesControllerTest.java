@@ -315,8 +315,8 @@ public class ExpensesControllerTest {
                 .andExpect(jsonPath("$.totalExpensesCount", is(2)))
                 .andExpect(jsonPath("$.total", is(20)))
                 .andExpect(jsonPath("$.countExpenses", is(2)))
-                .andExpect(jsonPath("$.categoryAndCountList[0].category", is("STEUER")))
-                .andExpect(jsonPath("$.categoryAndCountList[0].count", is(2)));
+                .andExpect(jsonPath("$.categoryAndCountList[0].category", is("DIESEL")))
+                .andExpect(jsonPath("$.categoryAndCountList[0].count", is(1)));
         //  .andExpect(jsonPath("$.categoryAndAmountList[0].name", is("STEUER")))
         //  .andExpect(jsonPath("$.categoryAndAmountList[0].amount", is(30)));
 

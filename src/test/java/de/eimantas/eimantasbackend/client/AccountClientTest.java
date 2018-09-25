@@ -5,6 +5,7 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -101,6 +102,7 @@ public class AccountClientTest {
 
 
     @Test
+    @Ignore
     public void testGlobalOverview() {
         Collection<Long> response = client.getAccountList();
         assertNotNull(response);
