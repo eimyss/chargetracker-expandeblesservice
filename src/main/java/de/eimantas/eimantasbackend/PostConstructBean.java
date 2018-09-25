@@ -12,37 +12,37 @@ import java.util.Arrays;
 @Component
 public class PostConstructBean implements ApplicationRunner {
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private Environment environment;
+  @Autowired
+  private Environment environment;
 
-    private void preFillData() {
+  private void preFillData() {
 
+  }
+
+  @Override
+  public void run(ApplicationArguments args) throws Exception {
+
+    logger.info("Starting expenses backend controller");
+    logger.info("eureka server: "
+        + environment.getProperty("spring.application.name"));
+    logger.info("active profiles: "
+        + Arrays.asList(environment.getActiveProfiles()).toString());
+    logger.info("default profiles: "
+        + Arrays.asList(environment.getDefaultProfiles()).toString());
+    logger.info("sonstige info: "
+        + environment.toString());
+    logger.info("allowed Profiles: "
+        + environment.getProperty("spring.profiles"));
+
+    if (environment.getProperty("spring.profiles") != null) {
+      if (environment.getProperty("spring.profiles").contains("populate")) {
+        logger.info("Stuff will be populated!");
+        preFillData();
+      }
+    } else {
+      logger.info("Profile doesnt populate data");
     }
-
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-
-        logger.info("Starting expenses backend controller");
-        logger.info("eureka server: "
-                + environment.getProperty("spring.application.name"));
-        logger.info("active profiles: "
-                + Arrays.asList(environment.getActiveProfiles()).toString());
-        logger.info("default profiles: "
-                + Arrays.asList(environment.getDefaultProfiles()).toString());
-        logger.info("sonstige info: "
-                + environment.toString());
-        logger.info("allowed Profiles: "
-                + environment.getProperty("spring.profiles"));
-
-        if (environment.getProperty("spring.profiles") != null) {
-            if (environment.getProperty("spring.profiles").contains("populate")) {
-                logger.info("Stuff will be populated!");
-                preFillData();
-            }
-        } else {
-            logger.info("Profile doesnt populate data");
-        }
-    }
+  }
 }
