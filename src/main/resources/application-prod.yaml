@@ -38,3 +38,8 @@ eureka:
     healthCheckUrlPath: /actuator/health
 logging:
   file: myapplication.log
+feign:
+  client:
+    config:
+      account:
+        name: account-service
