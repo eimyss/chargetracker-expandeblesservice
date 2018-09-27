@@ -7,7 +7,7 @@ keycloak:
 spring:
   profiles: ref, populate
   application:
-    name: expenses-catalog-servers-ref
+    name: expenses-service-ref
   datasource:
     url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     platform: h2

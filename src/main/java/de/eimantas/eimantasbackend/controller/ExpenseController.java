@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,34 +92,34 @@ public class ExpenseController {
 
   @GetMapping("/get/{id}")
   @CrossOrigin(origins = "*")
-  public ResponseEntity<ExpenseDTO> getExpenseById(@PathVariable long id) {
+  public ExpenseDTO getExpenseById(@PathVariable long id) throws NonExistingEntityException {
     logger.info("get expense for id: " + id);
 
     Optional<Expense> expenseOptional = expensesService.findById(id);
 
     if (expenseOptional.isPresent()) {
-      return new ResponseEntity(entitiesConverter.getExpenseDTO(expenseOptional), HttpStatus.OK);
+      throw new NonExistingEntityException("Expense by id: " + id + " is null");
     }
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    logger.info("expense found!");
+    return entitiesConverter.getExpenseDTO(expenseOptional.get());
   }
 
 
   @GetMapping("/account/{accountId}")
   @CrossOrigin(origins = "*")
-  public ResponseEntity<List<ExpenseDTO>> getExpenseByAccount(@PathVariable long accountId) {
+  public List<ExpenseDTO> getExpenseByAccount(@PathVariable long accountId) {
     logger.info("get expense for account id: " + accountId);
 
     List<ExpenseDTO> expenses = expensesService.getExpensesForAccount(accountId);
     logger.info("returning " + expenses.size() + " expsenses");
-    return new ResponseEntity(expenses, HttpStatus.OK);
+    return expenses;
   }
 
 
   @GetMapping(value = "/populate/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   @CrossOrigin(origins = "*")
   @Transactional
-  public ResponseEntity<String> populateExpenses(Principal principal, @PathVariable long accountId) {
+  public List<ExpenseDTO> populateExpenses(Principal principal, @PathVariable long accountId) {
     KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
 
     String userId = securityService.getUserIdFromPrincipal(userAuth);
@@ -140,9 +139,13 @@ public class ExpenseController {
       }
     }
 
-    expensesService.saveAll(expenses);
+    Iterable<Expense> expensesSaved = expensesService.saveAll(expenses);
     logger.info("succesfully populated stuff");
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+    List<Expense> savedList = new ArrayList<Expense>();
+    expensesSaved.forEach(savedList::add);
+    logger.info("populated :" + savedList.size() + " expenses");
+
+    return entitiesConverter.convertExpenses(savedList);
   }
 
   @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -355,21 +358,12 @@ public class ExpenseController {
 
   @GetMapping(value = "/overview/expenses/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   @CrossOrigin(origins = "*")
-  public ResponseEntity<AccountOverViewDTO> getExpensesOverview(Principal principal, @PathVariable long id) {
+  public AccountOverViewDTO getExpensesOverview(Principal principal, @PathVariable long id) {
 
-    if (principal == null) {
-      return new ResponseEntity(HttpStatus.FORBIDDEN);
-    }
-
-    if (id == 0) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
 
     KeycloakAuthenticationToken user = (KeycloakAuthenticationToken) principal;
     Optional<AccountOverViewDTO> overview = expensesService.getExpensesOverview(id, user);
-    return overview.map(entity -> new ResponseEntity<AccountOverViewDTO>(entity, HttpStatus.OK))
-        .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
+    return overview.get();
   }
 
   @ExceptionHandler(BadRequestException.class)

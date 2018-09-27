@@ -6,7 +6,7 @@ keycloak:
   principal-attribute: preferred_username
 spring:
   application:
-    name: expenses-catalog-servers-int
+    name: expenses-service-int
   profiles: int, populate
   datasource:
     url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -50,3 +50,8 @@ logging:
   level:
     org.keycloak: INFO
     org.springframework.security: INFO
+feign:
+  client:
+    config:
+      account:
+        name: account-service-ref

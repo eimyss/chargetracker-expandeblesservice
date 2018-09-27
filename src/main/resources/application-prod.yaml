@@ -6,9 +6,9 @@ keycloak:
   principal-attribute: preferred_username
 spring:
   application:
-    name: expenses-catalog-servers
+    name: expenses-service
   datasource:
-    url: jdbc:mysql://192.168.123.157:3306/expenses?useSSL=false
+    url: jdbc:mysql://192.168.123.157:3306/expensesdb?useSSL=false
     username: spring
     password: expenses
     driverClassName: com.mysql.jdbc.Driver
