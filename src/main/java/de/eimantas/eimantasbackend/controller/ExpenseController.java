@@ -97,8 +97,9 @@ public class ExpenseController {
 
     Optional<Expense> expenseOptional = expensesService.findById(id);
 
-    if (expenseOptional.isPresent()) {
-      throw new NonExistingEntityException("Expense by id: " + id + " is null");
+    if (!expenseOptional.isPresent()) {
+      logger.warn("expense with id : " + id + "is not present");
+      throw new NonExistingEntityException("Expense by id: '" + id + "' is null");
     }
     logger.info("expense found!");
     return entitiesConverter.getExpenseDTO(expenseOptional.get());
