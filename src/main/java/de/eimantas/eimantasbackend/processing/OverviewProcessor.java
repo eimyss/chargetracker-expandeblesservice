@@ -59,7 +59,6 @@ public class OverviewProcessor {
         logger.info("found " + unexpenced.size() + " not expensed expenses");
 
         if (dto != null) {
-          logger.warn("passed dto is null, expenses wont be added");
           // we check for each month, and add if not expensed
           dto.addNotExpenced(entitiesConverter.convertExpenses(unexpenced));
         }
@@ -93,7 +92,6 @@ public class OverviewProcessor {
   }
 
   private List<Expense> getQualifiedExpenses(int month, Stream<Expense> expensesStream) {
-
 
     // get expenses that are fitting the date
     List<Expense> qualified = expensesStream.filter(new Predicate<Expense>() {

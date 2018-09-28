@@ -280,9 +280,11 @@ public class ExpensesService {
 
     Collection<Long> accountIds = accountsClient.getAccountList();
 
-    for (Long accId : accountIds) {
+    logger.info("got accounts List: " + accountIds.size() );
 
+    for (Long accId : accountIds) {
       Collection<Expense> expenses = expenseRepository.findByAccountId(accId);
+      logger.info("found " + expenses.size() + " for account id: " + accId);
       overview.put(accId, processor.getPerMonthOverView(monthsGoBack, expenses, dto));
 
     }
