@@ -1,14 +1,13 @@
 package de.eimantas.eimantasbackend;
 
+import de.eimantas.eimantasbackend.entities.Booking;
 import de.eimantas.eimantasbackend.entities.Expense;
 import de.eimantas.eimantasbackend.entities.ExpenseCategory;
+import de.eimantas.eimantasbackend.entities.dto.BookingDTO;
 import de.eimantas.eimantasbackend.entities.dto.ExpenseDTO;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneOffset;
+import java.time.*;
 
 public class TestUtils {
 
@@ -84,4 +83,24 @@ public class TestUtils {
   }
 
 
+  public static Booking getBooking(int id) {
+
+    Booking booking = new Booking();
+    booking.setId(id);
+    booking.setEndDate(LocalDateTime.now());
+    booking.setStartdate(LocalDateTime.now());
+    booking.setName("Booking");
+    booking.setProjectId(2);
+    return booking;
+  }
+
+  public static BookingDTO getBookingDto(int i) {
+    BookingDTO booking = new BookingDTO();
+    booking.setId(i);
+    booking.setEndDate(LocalDateTime.now());
+    booking.setStartdate(LocalDateTime.now());
+    booking.setName("Booking");
+    booking.setProjectId(2);
+    return booking;
+  }
 }

@@ -1,6 +1,8 @@
 package de.eimantas.eimantasbackend.entities.converter;
 
+import de.eimantas.eimantasbackend.entities.Booking;
 import de.eimantas.eimantasbackend.entities.Expense;
+import de.eimantas.eimantasbackend.entities.dto.BookingDTO;
 import de.eimantas.eimantasbackend.entities.dto.CSVExpenseDTO;
 import de.eimantas.eimantasbackend.entities.dto.ExpenseDTO;
 import org.modelmapper.ModelMapper;
@@ -90,5 +92,25 @@ public class EntitiesConverter {
     List<Expense> converted = new ArrayList<>();
     dtosList.forEach(exp -> converted.add(getExpenseFromDTO(exp)));
     return converted;
+  }
+
+  public BookingDTO getBookingDTO(Booking booking) {
+
+    if (booking != null) {
+      BookingDTO dto = modelMapper.<BookingDTO>map(booking, BookingDTO.class);
+      return dto;
+    }
+    logger.info("expense is null");
+    return null;
+  }
+
+  public Booking getBookingFromDTO(BookingDTO booking) {
+
+    if (booking != null) {
+      Booking dto = modelMapper.<Booking>map(booking, Booking.class);
+      return dto;
+    }
+    logger.info("booking is null");
+    return null;
   }
 }

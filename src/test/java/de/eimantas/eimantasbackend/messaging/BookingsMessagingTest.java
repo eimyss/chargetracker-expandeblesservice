@@ -1,6 +1,5 @@
 package de.eimantas.eimantasbackend.messaging;
 
-import de.eimantas.eimantasbackend.TestUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,7 +24,7 @@ import java.nio.charset.Charset;
 @AutoConfigureMockMvc
 @Transactional
 @ActiveProfiles("test")
-public class ExpensesMessagingTest {
+public class BookingsMessagingTest {
 
 
   private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -36,7 +35,7 @@ public class ExpensesMessagingTest {
   private MockMvc mockMvc;
 
   @Autowired
-  ExpensesSender expensesSender;
+  BookingsSender bookingsSender;
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -49,9 +48,8 @@ public class ExpensesMessagingTest {
 
 
   @Test
-  @Ignore
   public void testQueue() throws Exception {
-    expensesSender.createExpense(TestUtils.getExpenseDTO());
+    bookingsSender.notifyCreateExpense(1);
   }
 
 

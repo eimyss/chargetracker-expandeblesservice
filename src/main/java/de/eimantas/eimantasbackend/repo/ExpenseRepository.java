@@ -14,8 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-@RepositoryRestResource
-@CrossOrigin(origins = "*")
 public interface ExpenseRepository extends CrudRepository<Expense, Long>, JpaSpecificationExecutor<Expense> {
 
   public Collection<Expense> findByAccountId(long accountId);
