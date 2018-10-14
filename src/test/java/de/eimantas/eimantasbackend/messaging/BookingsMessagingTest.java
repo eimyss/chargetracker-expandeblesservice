@@ -49,7 +49,7 @@ public class BookingsMessagingTest {
 
   @Test
   public void testQueue() throws Exception {
-    bookingsSender.notifyCreateExpense(1);
+    bookingsSender.notifyCreateExpense(11);
   }
 
 
