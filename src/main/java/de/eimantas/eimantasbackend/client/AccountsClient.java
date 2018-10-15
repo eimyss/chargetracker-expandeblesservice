@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Collection;
 
-@FeignClient(value = "${feign.client.config.account.name}", configuration = AccountsClientConfig.class)
+@FeignClient(value = "${feign.client.config.service.account}", configuration = ClientConfig.class)
 public interface AccountsClient {
 
   @GetMapping("/account/list/id")

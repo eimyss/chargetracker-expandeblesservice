@@ -41,5 +41,6 @@ logging:
 feign:
   client:
     config:
-      account:
-        name: account-service
+      service:
+        booking: expenses-service
+        account: account-service

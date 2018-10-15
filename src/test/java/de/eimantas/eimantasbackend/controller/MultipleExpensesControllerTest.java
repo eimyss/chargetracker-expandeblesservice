@@ -170,7 +170,7 @@ public class MultipleExpensesControllerTest {
     mockMvc.perform(get("/expense/types")).andExpect(status().isOk())
         .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(6)));
+        .andExpect(jsonPath("$", hasSize(7)));
 
 
   }

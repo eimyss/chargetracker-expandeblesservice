@@ -10,7 +10,7 @@ import java.util.Random;
 
 @ApiModel
 public enum ExpenseCategory {
-  ESSEN, STEUER, TRINKEN, DIESEL, ZIGARETTEN, IMPORTED;
+  ESSEN, STEUER, TRINKEN, DIESEL, ZIGARETTEN, IMPORTED, GENERATED_NOT_CALCULATE;
 
   private static final List<ExpenseCategory> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
   private static final int SIZE = VALUES.size();

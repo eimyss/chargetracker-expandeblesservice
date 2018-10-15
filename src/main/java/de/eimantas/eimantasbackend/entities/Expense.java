@@ -35,6 +35,7 @@ public class Expense {
   private boolean expensed;
   private boolean valid;
   private LocalDate expensedDate;
+  private boolean forecasted;
   private boolean expensable;
   private boolean periodic;
   long accountId;

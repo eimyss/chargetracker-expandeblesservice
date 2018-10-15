@@ -1,6 +1,7 @@
 package de.eimantas.eimantasbackend.service;
 
 import de.eimantas.eimantasbackend.client.AccountsClient;
+import de.eimantas.eimantasbackend.client.BookingsClient;
 import de.eimantas.eimantasbackend.controller.exceptions.BadRequestException;
 import de.eimantas.eimantasbackend.controller.exceptions.NonExistingEntityException;
 import de.eimantas.eimantasbackend.entities.AccountOverView;
@@ -9,26 +10,25 @@ import de.eimantas.eimantasbackend.entities.ExpenseCategory;
 import de.eimantas.eimantasbackend.entities.Specification.ExpensesSpecification;
 import de.eimantas.eimantasbackend.entities.Specification.SearchCriteria;
 import de.eimantas.eimantasbackend.entities.converter.EntitiesConverter;
-import de.eimantas.eimantasbackend.entities.dto.*;
-import de.eimantas.eimantasbackend.helpers.DateHelper;
+import de.eimantas.eimantasbackend.entities.dto.AccountOverViewDTO;
+import de.eimantas.eimantasbackend.entities.dto.AllAccountsOverViewDTO;
+import de.eimantas.eimantasbackend.entities.dto.CategoryAndCountOverview;
+import de.eimantas.eimantasbackend.entities.dto.ExpenseDTO;
 import de.eimantas.eimantasbackend.processing.OverviewProcessor;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.TemporalField;
-import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.groupingBy;
 
 
 @Service
@@ -38,6 +38,8 @@ public class ExpensesService {
   SecurityService securityService;
   @Inject
   ExpenseRepository expenseRepository;
+  @Inject
+  BookingsClient bookingsClient;
 
   @Inject
   OverviewProcessor processor;
@@ -72,35 +74,17 @@ public class ExpensesService {
 
   public Optional<AccountOverView> getOverViewForAccount(long id, KeycloakAuthenticationToken authentication) {
 
-
     if (authentication == null) {
       throw new SecurityException("auth cannot be null!");
     }
-
 
     if (!securityService.isAllowedToReadAcc(authentication, id)) {
       throw new SecurityException("this user cannot read the account info!");
     }
 
     Collection<Expense> expensesList = expenseRepository.findByAccountId(id);
-
-    AccountOverView overView = new AccountOverView();
-    overView.setRefAccountId(id);
-    overView.setCountExpenses(expensesList.size());
-    overView.setActive(true);
-
-
-    if (!expensesList.isEmpty()) {
-      BigDecimal sum = expensesList.stream().filter(expense -> !expense.isExpensed()).map(Expense::getBetrag).reduce(BigDecimal::add).get();
-      overView.setTotal(sum);
-    }
-    // sum of all values that are already expensed
-
-    return Optional.of(overView);
-
-
+    return processor.getOverViewForAccount(expensesList, id);
   }
-
 
   public List<Expense> searchExpensesByName(String searchString) {
 
@@ -119,46 +103,7 @@ public class ExpensesService {
   // we still need account id, because in dropbox you can select multiple accunts
   public Optional<AccountOverViewDTO> getExpensesOverview(long accountID, KeycloakAuthenticationToken authentication) {
 
-    AccountOverViewDTO dto = new AccountOverViewDTO();
-    dto.setRefAccountId(accountID);
-    dto.setTotalExpensesCount(getExpensesCountForAcc(accountID));
-    dto.setCountExpenses(getExpensesCountForAcc(accountID));
-    List<CategoryAndCountOverview> stats = getCategoryAndCountForAcc(accountID);
-    logger.info("got stats for account id: " + accountID + " size: " + stats.size());
-    dto.setCategoryAndCountList(stats);
-
-    dto.setTotal(getTotalAmountForAcc(accountID));
-
-    // get current week
-    LocalDate date = LocalDate.now();
-    TemporalField woy = WeekFields.ISO.weekOfWeekBasedYear();
-    int weekNumber = date.get(woy);
-
-    LocalDateTime begin = DateHelper.getBeginOfWeek(weekNumber);
-    LocalDateTime end = DateHelper.getEndOfWeek(weekNumber);
-
-    Stream<Expense> expensesForWeek = expenseRepository.findExpensesInPeriodForAccount(accountID, begin.toInstant(ZoneOffset.UTC), end.toInstant(ZoneOffset.UTC));
-
-    Map<ExpenseCategory, List<Expense>> expensesPerType = expensesForWeek
-        .collect(groupingBy(Expense::getCategory));
-
-    logger.info("got expenses for type for acc id: " + accountID + " size: " + expensesPerType.size());
-
-    List<CategoryAndAmountOverview> amountsForWeek = new ArrayList<>();
-
-    // OMG IF THIS WORKS!!!!
-    expensesPerType.forEach(
-        ((key, value) -> {
-          amountsForWeek.add(new CategoryAndAmountOverview(key, value.stream().map((x) -> x.getBetrag()).reduce((x, y) -> x.add(y)).get()));
-        }));
-
-    logger.info("got expenses amounts for week: for acc id: " + accountID + " size: " + expensesPerType.size());
-
-    dto.setCategoryAndAmountList(amountsForWeek);
-
-
-    return Optional.of(dto);
-
+    return processor.getExpensesOverview(accountID, authentication);
 
   }
 
@@ -272,26 +217,45 @@ public class ExpensesService {
     String userId = securityService.getUserIdFromPrincipal(principal);
     logger.info("obtained principal " + principal.getName() + "for user id: " + userId);
 
-    Map<Long, List<MonthAndAmountOverview>> overview = new HashMap<Long, List<MonthAndAmountOverview>>();
-    AllAccountsOverViewDTO dto = new AllAccountsOverViewDTO();
+    return processor.getAllACccountsOverViewForUser(userId, accountsClient.getAccountList(), monthsGoBack);
 
-    dto.setMonthBack(monthsGoBack);
-    dto.setUserId(userId);
-
-    Collection<Long> accountIds = accountsClient.getAccountList();
-
-    logger.info("got accounts List: " + accountIds.size() );
-
-    for (Long accId : accountIds) {
-      Collection<Expense> expenses = expenseRepository.findByAccountId(accId);
-      logger.info("found " + expenses.size() + " for account id: " + accId);
-      overview.put(accId, processor.getPerMonthOverView(monthsGoBack, expenses, dto));
-
-    }
-
-    dto.setOverview(overview);
-
-    return dto;
   }
 
+  public void createExpenseFromBooking(JSONObject json) {
+
+    try {
+      int bookingId = json.getInt("booking_id");
+      BigDecimal amount = new BigDecimal(json.getString("Amount"));
+      int refAccountId = json.getInt("refAccountId");
+      String userId = json.getString("UserId");
+      Expense expense = new Expense();
+      expense.setCreateDate(Instant.now());
+      expense.setValid(true);
+      expense.setUserId(userId);
+      expense.setCurrency("EUR");
+      expense.setForecasted(true);
+      expense.setExpensable(false);
+      expense.setCategory(ExpenseCategory.GENERATED_NOT_CALCULATE);
+      expense.setOrt("Project Place");
+      expense.setAccountId(refAccountId);
+      expense.setBetrag(amount);
+
+      logger.info("Saving expense: " + expense.toString());
+
+      expenseRepository.save(expense);
+
+    } catch (JSONException e) {
+      logger.error("Failed to parse Json from Processed booking message: ", e.getMessage());
+      e.printStackTrace();
+    }
+
+  }
+
+  public Stream<Expense> findExpensesInPeriodForAccount(long accountID, Instant start, Instant end) {
+    return expenseRepository.findExpensesInPeriodForAccount(accountID, start, end);
+  }
+
+  public Collection<Expense> findByAccountId(Long accId) {
+    return expenseRepository.findByAccountId(accId);
+  }
 }

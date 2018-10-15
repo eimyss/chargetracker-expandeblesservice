@@ -20,7 +20,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Configuration
-public class AccountsClientConfig {
+public class ClientConfig {
 
   @Value("${service.feign.connectTimeout:60000}")
   private int connectTimeout;

@@ -45,5 +45,6 @@ elasticsearch:
 feign:
   client:
     config:
-      account:
-        name: account-service-int
+      service:
+        booking: expenses-service-int
+        account: account-service-int

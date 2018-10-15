@@ -1,21 +1,29 @@
 package de.eimantas.eimantasbackend.processing;
 
+import de.eimantas.eimantasbackend.entities.AccountOverView;
 import de.eimantas.eimantasbackend.entities.Expense;
+import de.eimantas.eimantasbackend.entities.ExpenseCategory;
 import de.eimantas.eimantasbackend.entities.converter.EntitiesConverter;
-import de.eimantas.eimantasbackend.entities.dto.AllAccountsOverViewDTO;
-import de.eimantas.eimantasbackend.entities.dto.MonthAndAmountOverview;
+import de.eimantas.eimantasbackend.entities.dto.*;
 import de.eimantas.eimantasbackend.helpers.DateHelper;
+import de.eimantas.eimantasbackend.service.ExpensesService;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalField;
+import java.time.temporal.WeekFields;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.groupingBy;
 
 
 @Service
@@ -26,6 +34,9 @@ public class OverviewProcessor {
 
   @Inject
   private EntitiesConverter entitiesConverter;
+
+  @Inject
+  private ExpensesService expensesService;
 
 
   /**
@@ -116,5 +127,93 @@ public class OverviewProcessor {
     return BigDecimal.ZERO;
 
   }
+
+  // we still need account id, because in dropbox you can select multiple accunts
+  public Optional<AccountOverViewDTO> getExpensesOverview(long accountID, KeycloakAuthenticationToken authentication) {
+
+    AccountOverViewDTO dto = new AccountOverViewDTO();
+    dto.setRefAccountId(accountID);
+    dto.setTotalExpensesCount(expensesService.getExpensesCountForAcc(accountID));
+    dto.setCountExpenses(expensesService.getExpensesCountForAcc(accountID));
+    List<CategoryAndCountOverview> stats = expensesService.getCategoryAndCountForAcc(accountID);
+    logger.info("got stats for account id: " + accountID + " size: " + stats.size());
+    dto.setCategoryAndCountList(stats);
+
+    dto.setTotal(expensesService.getTotalAmountForAcc(accountID));
+
+    // get current week
+    LocalDate date = LocalDate.now();
+    TemporalField woy = WeekFields.ISO.weekOfWeekBasedYear();
+    int weekNumber = date.get(woy);
+
+    LocalDateTime begin = DateHelper.getBeginOfWeek(weekNumber);
+    LocalDateTime end = DateHelper.getEndOfWeek(weekNumber);
+
+    Stream<Expense> expensesForWeek = expensesService.findExpensesInPeriodForAccount(accountID, begin.toInstant(ZoneOffset.UTC), end.toInstant(ZoneOffset.UTC));
+
+    Map<ExpenseCategory, List<Expense>> expensesPerType = expensesForWeek
+        .collect(groupingBy(Expense::getCategory));
+
+    logger.info("got expenses for type for acc id: " + accountID + " size: " + expensesPerType.size());
+
+    List<CategoryAndAmountOverview> amountsForWeek = new ArrayList<>();
+
+    // OMG IF THIS WORKS!!!!
+    expensesPerType.forEach(
+        ((key, value) -> {
+          amountsForWeek.add(new CategoryAndAmountOverview(key, value.stream().map((x) -> x.getBetrag()).reduce((x, y) -> x.add(y)).get()));
+        }));
+
+    logger.info("got expenses amounts for week: for acc id: " + accountID + " size: " + expensesPerType.size());
+
+    dto.setCategoryAndAmountList(amountsForWeek);
+
+    return Optional.of(dto);
+
+
+  }
+
+  public AllAccountsOverViewDTO getAllACccountsOverViewForUser(String userId, Collection<Long> accountIds, int monthsGoBack) {
+
+    logger.info("getAllACccountsOverViewForUser for user id: " + userId);
+
+    Map<Long, List<MonthAndAmountOverview>> overview = new HashMap<Long, List<MonthAndAmountOverview>>();
+    AllAccountsOverViewDTO dto = new AllAccountsOverViewDTO();
+
+    dto.setMonthBack(monthsGoBack);
+    dto.setUserId(userId);
+
+    logger.info("got accounts List: " + accountIds.size());
+
+    for (Long accId : accountIds) {
+      Collection<Expense> expenses = expensesService.findByAccountId(accId);
+      logger.info("found " + expenses.size() + " for account id: " + accId);
+      overview.put(accId, getPerMonthOverView(monthsGoBack, expenses, dto));
+
+    }
+
+    dto.setOverview(overview);
+
+    return dto;
+  }
+
+
+  public Optional<AccountOverView> getOverViewForAccount(Collection<Expense> expensesList, long accId) {
+
+    AccountOverView overView = new AccountOverView();
+    overView.setRefAccountId(accId);
+    overView.setCountExpenses(expensesList.size());
+    overView.setActive(true);
+
+    if (!expensesList.isEmpty()) {
+      BigDecimal sum = expensesList.stream().filter(expense -> !expense.isExpensed()).map(Expense::getBetrag).reduce(BigDecimal::add).get();
+      overView.setTotal(sum);
+    }
+    // sum of all values that are already expensed
+
+    return Optional.of(overView);
+
+  }
+
 
 }
