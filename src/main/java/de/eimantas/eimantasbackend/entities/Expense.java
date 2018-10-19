@@ -28,6 +28,8 @@ public class Expense {
   private String ort;
   private String userId;
   private Instant createDate;
+  private boolean processed;
+  private long transactionId;
   @Column(length = 1000)
   private String purpose;
   private String currency;

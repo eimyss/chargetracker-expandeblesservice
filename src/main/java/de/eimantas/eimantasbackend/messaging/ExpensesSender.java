@@ -24,7 +24,6 @@ public class ExpensesSender {
   public ExpensesSender(RabbitTemplate rabbitTemplate, Exchange exchange) {
     this.rabbitTemplate = rabbitTemplate;
     this.exchange = exchange;
-
     JavaTimeModule module = new JavaTimeModule();
     mapper.registerModule(module);
   }
@@ -36,5 +35,11 @@ public class ExpensesSender {
 
     logger.info("Sending to exchange: " + exchange.getName() + " with message: " + expense);
     rabbitTemplate.convertAndSend(exchange.getName(), routingKey, mapper.writeValueAsString(expense));
+  }
+
+  public void notifyCreatedExpense(Long id) {
+    String routingKey = "expenses.created";
+    logger.info("Sending to exchange: " + exchange.getName() + " about created expense with ID: " + id);
+    rabbitTemplate.convertAndSend(exchange.getName(), routingKey, id);
   }
 }

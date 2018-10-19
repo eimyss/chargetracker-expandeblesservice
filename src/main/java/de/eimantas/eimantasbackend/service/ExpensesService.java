@@ -14,20 +14,23 @@ import de.eimantas.eimantasbackend.entities.dto.AccountOverViewDTO;
 import de.eimantas.eimantasbackend.entities.dto.AllAccountsOverViewDTO;
 import de.eimantas.eimantasbackend.entities.dto.CategoryAndCountOverview;
 import de.eimantas.eimantasbackend.entities.dto.ExpenseDTO;
+import de.eimantas.eimantasbackend.messaging.ExpensesSender;
 import de.eimantas.eimantasbackend.processing.OverviewProcessor;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 
@@ -41,6 +44,8 @@ public class ExpensesService {
   @Inject
   BookingsClient bookingsClient;
 
+  @Inject
+  ExpensesSender expensesSender;
   @Inject
   OverviewProcessor processor;
 
@@ -142,7 +147,6 @@ public class ExpensesService {
       return Collections.EMPTY_LIST;
     }
     Collection<Expense> expenses = expenseRepository.findByAccountId(accountId);
-
     return converter.convertExpenses(expenses);
 
   }
@@ -158,8 +162,8 @@ public class ExpensesService {
 
   public Expense save(Expense expense) throws NonExistingEntityException {
 
+    boolean updated = false;
     logger.info("Saving expense");
-
     if (expense == null) {
       throw new IllegalArgumentException("Expense cannot be null");
     }
@@ -171,14 +175,28 @@ public class ExpensesService {
         logger.warn("Expense with id: " + expense.getId() + " doesnt exist!");
         throw new NonExistingEntityException("There is no expense for update with id: " + expense.getId());
       }
+
+      updated = true;
       expense.setUpdateDate(LocalDate.now());
     } else {
       logger.info("expense is new!");
       expense.setCreateDate(Instant.now());
     }
 
+    Expense expenseSaved = expenseRepository.save(expense);
+
+
+    logger.info("Notifiying about created expense");
+    if (!updated) {
+      notifyCreatedExpense(expense.getId());
+    }
+
     return expenseRepository.save(expense);
 
+  }
+
+  public void notifyCreatedExpense(Long id) {
+    expensesSender.notifyCreatedExpense(id);
   }
 
   public Iterable<Expense> findAll() {
@@ -194,16 +212,13 @@ public class ExpensesService {
   }
 
   public List<Expense> searchExpensesInPeriod(Instant from, Instant to) throws BadRequestException {
+
     if (from == null || to == null) {
       throw new BadRequestException("From and to cannot be null");
     }
-
     logger.info("Getting expenses from :" + from.toString() + " to " + to.toString());
-
     List<Expense> expenses = expenseRepository.findByCreateDateBetween(from, to);
-
     logger.info("found:" + expenses.size() + " expenses");
-
     return expenses;
 
   }
@@ -224,10 +239,13 @@ public class ExpensesService {
   public void createExpenseFromBooking(JSONObject json) {
 
     try {
+
       int bookingId = json.getInt("booking_id");
       BigDecimal amount = new BigDecimal(json.getString("Amount"));
       int refAccountId = json.getInt("refAccountId");
       String userId = json.getString("UserId");
+
+      logger.info("creating expense from booking: " + bookingId);
       Expense expense = new Expense();
       expense.setCreateDate(Instant.now());
       expense.setValid(true);
@@ -241,7 +259,6 @@ public class ExpensesService {
       expense.setBetrag(amount);
 
       logger.info("Saving expense: " + expense.toString());
-
       expenseRepository.save(expense);
 
     } catch (JSONException e) {
@@ -257,5 +274,33 @@ public class ExpensesService {
 
   public Collection<Expense> findByAccountId(Long accId) {
     return expenseRepository.findByAccountId(accId);
+  }
+
+  public void updateExpenseToProcessed(JSONObject json) {
+
+    long transactionId = parseInt(json, "transactionId");
+    long entityId = parseInt(json, "refEntityId");
+    logger.info("Updating expense witth id : " + entityId);
+    Optional<Expense> expense = expenseRepository.findById(entityId);
+    if (expense.isPresent()) {
+      Expense exp = expense.get();
+      exp.setProcessed(true);
+      exp.setTransactionId(transactionId);
+      expenseRepository.save(exp);
+    } else {
+      logger.warn("Expense with id :" + entityId + "is not present, but was notified for added in account. transaction id: " + transactionId);
+    }
+
+  }
+
+
+  private int parseInt(JSONObject json, String key) {
+    try {
+      return json.getInt(key);
+    } catch (JSONException e) {
+      logger.info("error getting  int for key ", e);
+      e.printStackTrace();
+    }
+    return 0;
   }
 }

@@ -6,6 +6,7 @@ import de.eimantas.eimantasbackend.entities.dto.AccountOverViewDTO;
 import de.eimantas.eimantasbackend.entities.dto.CategoryAndCountOverview;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -230,6 +231,12 @@ public class ExpensesOverviewServiceTest {
     int count = expensesService.getExpensesCountForAcc(0);
     assertThat(count).isEqualTo(0);
 
+  }
+
+  @Test
+  @Ignore
+  public void testNotifyCreatedExpense() throws Exception {
+    expensesService.notifyCreatedExpense(10L);
   }
 
 
