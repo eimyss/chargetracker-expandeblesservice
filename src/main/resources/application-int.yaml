@@ -1,5 +1,5 @@
 keycloak:
-  auth-server-url: http://192.168.123.157:8180/auth
+  auth-server-url: https://security.eimantas-services.de/auth
   realm: expenses
   resource: expenses-app
   public-client: true
