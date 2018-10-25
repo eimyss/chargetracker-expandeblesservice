@@ -27,9 +27,15 @@ It is intended to use as a docker container (later Kubernetes / Openshift)
 + mvn docker plugin
 + mysql / h2 (for saving stuff)
 + prometheus and Zipkin clients (for tracing and monitoring)
-+ swagger (for endpoint desc)
++ swagger (for endpoint desc) 
++ logstash (for elk logging)
 
 
 ## TODO: 
 *  Pending diagrams
  * multi tenancy 
+
+
+# LICENCE 
+
+* MIT
