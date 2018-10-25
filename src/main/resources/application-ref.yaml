@@ -1,9 +1,3 @@
-keycloak:
-  auth-server-url: https://security.eimantas-services.de/auth
-  realm: expenses
-  resource: expenses-app
-  public-client: true
-  principal-attribute: preferred_username
 spring:
   profiles: ref, populate
   application:
