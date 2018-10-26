@@ -10,6 +10,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,20 +18,30 @@ import org.springframework.context.annotation.Configuration;
 public class ConsumerConfiguration {
 
 
+  @Value("${expenses.messaging.exchange}")
+  private String eventexchange;
+
+  @Value("${expenses.messaging.bookingQueueName}")
+  private String bookingQueue;
+
+  @Value("${expenses.messaging.expensesQueueName}")
+  private String expensesQueue;
+
+
   @Bean
   public TopicExchange eventExchange() {
-    return new TopicExchange("eventExchange");
+    return new TopicExchange(eventexchange);
   }
 
   @Bean
   public Queue bookingQueue() {
-    return new Queue("bookingServiceQueue");
+    return new Queue(bookingQueue);
   }
 
 
   @Bean
   public Queue expensesQueue() {
-    return new Queue("expensesServiceQueue");
+    return new Queue(expensesQueue);
   }
 
 
@@ -72,7 +83,7 @@ public class ConsumerConfiguration {
                                                   @Qualifier("bookingListenerAdapter") MessageListenerAdapter listenerAdapter) {
     SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
     container.setConnectionFactory(connectionFactory);
-    container.setQueueNames("bookingServiceQueue");
+    container.setQueueNames(bookingQueue);
     container.setMessageListener(listenerAdapter);
     return container;
   }
@@ -83,7 +94,7 @@ public class ConsumerConfiguration {
                                                    @Qualifier("expensesListenerAdapter") MessageListenerAdapter listenerAdapter) {
     SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
     container.setConnectionFactory(connectionFactory);
-    container.setQueueNames("expensesServiceQueue");
+    container.setQueueNames(expensesQueue);
     container.setMessageListener(listenerAdapter);
     return container;
   }

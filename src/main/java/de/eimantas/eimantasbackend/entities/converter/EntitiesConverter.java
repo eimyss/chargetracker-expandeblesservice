@@ -17,6 +17,7 @@ import java.util.Optional;
 
 public class EntitiesConverter {
 
+  public static final String EXPENSE_IS_NULL = "expense is null";
   @Autowired
   private ModelMapper modelMapper;
 
@@ -31,7 +32,7 @@ public class EntitiesConverter {
       return postDto;
 
     }
-    logger.info("expense is null");
+    logger.info(EXPENSE_IS_NULL);
     return null;
 
   }
@@ -43,7 +44,7 @@ public class EntitiesConverter {
       ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
       return postDto;
     }
-    logger.info("expense is null");
+    logger.info(EXPENSE_IS_NULL);
     return null;
 
   }
@@ -55,7 +56,7 @@ public class EntitiesConverter {
       Expense expense = modelMapper.<Expense>map(dto, Expense.class);
       return expense;
     }
-    logger.info("expense is null");
+    logger.info(EXPENSE_IS_NULL);
     return null;
   }
 
@@ -75,7 +76,7 @@ public class EntitiesConverter {
       ExpenseDTO postDto = modelMapper.<ExpenseDTO>map(expense, ExpenseDTO.class);
       return postDto;
     }
-    logger.info("expense is null");
+    logger.info(EXPENSE_IS_NULL);
     return null;
 
   }
@@ -100,7 +101,7 @@ public class EntitiesConverter {
       BookingDTO dto = modelMapper.<BookingDTO>map(booking, BookingDTO.class);
       return dto;
     }
-    logger.info("expense is null");
+    logger.info(EXPENSE_IS_NULL);
     return null;
   }
 

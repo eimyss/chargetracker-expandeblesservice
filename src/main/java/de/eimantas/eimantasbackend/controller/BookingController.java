@@ -43,9 +43,6 @@ public class BookingController {
   EntitiesConverter entitiesConverter;
 
 
-  public BookingController() {
-  }
-
   @GetMapping(value = "/get/all", produces = MediaType.APPLICATION_JSON_VALUE)
   @CrossOrigin(origins = "*")
   public Collection<BookingDTO> getBookings(Principal principal) {

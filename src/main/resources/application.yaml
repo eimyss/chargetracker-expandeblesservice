@@ -1,7 +1,7 @@
 keycloak:
   auth-server-url: https://security.eimantas-services.de/auth
-  realm: expenses
-  resource: expenses-app
+  realm: expenses-dev
+  resource: expenses-app-dev
   public-client: true
   principal-attribute: preferred_username
 spring:
@@ -51,3 +51,8 @@ eureka:
     preferIpAddress: true
     leaseRenewalIntervalInSeconds: 3
     healthCheckUrlPath: /actuator/health
+expenses:
+  messaging:
+    exchange: eventExchange
+    bookingQueueName: bookingServiceQueue-ref
+    expensesQueueName: expensesServiceQueue-ref

@@ -21,9 +21,6 @@ public class BookingReceiver {
 
   private static final Logger logger = LoggerFactory.getLogger(BookingReceiver.class);
 
-  public BookingReceiver() {
-
-  }
 
   //  @RabbitListener(queues = "orderServiceQueue")
   public void receive(String message) {
