@@ -60,7 +60,7 @@ public class ExpensesService {
 
   private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  public List<Expense> searchExpensesForUser(String searchString, long userId) {
+  public List<Expense> searchExpensesForUser(String searchString, KeycloakAuthenticationToken authentication) {
 
     if (searchString == null || searchString.equals("")) {
       logger.info("empty search string provided");
@@ -68,7 +68,7 @@ public class ExpensesService {
     }
 
     ExpensesSpecification specForUser =
-        new ExpensesSpecification(new SearchCriteria("user.id", "=", userId));
+        new ExpensesSpecification(new SearchCriteria("user.id", "=", securityService.getUserIdFromPrincipal(authentication)));
 
     ExpensesSpecification specForSearch =
         new ExpensesSpecification(new SearchCriteria("name", ":", searchString));
@@ -87,77 +87,59 @@ public class ExpensesService {
       throw new SecurityException("this user cannot read the account info!");
     }
 
-    Collection<Expense> expensesList = expenseRepository.findByAccountId(id);
+    Collection<Expense> expensesList = expenseRepository.findByAccountIdAndUserId(id, securityService.getUserIdFromPrincipal(authentication));
     return processor.getOverViewForAccount(expensesList, id);
-  }
-
-  public List<Expense> searchExpensesByName(String searchString) {
-
-    if (searchString == null || searchString.equals("")) {
-      logger.info("empty search string provided");
-      return Collections.emptyList();
-    }
-
-    ExpensesSpecification specForSearch =
-        new ExpensesSpecification(new SearchCriteria("name", ":", searchString));
-
-    return expenseRepository.findAll(specForSearch);
-
   }
 
   // we still need account id, because in dropbox you can select multiple accunts
   public Optional<AccountOverViewDTO> getExpensesOverview(long accountID, KeycloakAuthenticationToken authentication) {
-
     return processor.getExpensesOverview(accountID, authentication);
 
   }
 
-  public BigDecimal getTotalAmountForAcc(long id) {
-
+  public BigDecimal getTotalAmountForAcc(long id, KeycloakAuthenticationToken authentication) {
 
     if (id == 0) {
-      logger.warn("emoty id was passed for getting totals");
+      logger.warn("empty id was passed for getting totals");
       return BigDecimal.ZERO;
     }
 
-    Collection<Expense> expensesList = expenseRepository.findByAccountId(id);
+    Collection<Expense> expensesList = expenseRepository.findByAccountIdAndUserId(id, securityService.getUserIdFromPrincipal(authentication));
     return processor.getTotalAmountForExpenses(expensesList);
 
   }
 
 
-  public int getExpensesCountForAcc(long accountID) {
-    // TODO check both repo methods
+  public int getExpensesCountForAcc(long accountID, KeycloakAuthenticationToken authentication) {
     if (accountID == 0L) {
       logger.info("count was invoked for zero account id");
       return 0;
     }
-    return expenseRepository.selectCountForAccount(accountID);
+    return expenseRepository.selectCountForAccount(accountID, securityService.getUserIdFromPrincipal(authentication));
   }
 
-  public List<CategoryAndCountOverview> getCategoryAndCountForAcc(long accountID) {
-    return expenseRepository.findCategoryAndCount(accountID);
+  public List<CategoryAndCountOverview> getCategoryAndCountForAcc(long accountID, KeycloakAuthenticationToken authentication) {
+    return expenseRepository.findCategoryAndCount(accountID, securityService.getUserIdFromPrincipal(authentication));
 
   }
 
-  public List<ExpenseDTO> getExpensesForAccount(long accountId) {
+  public List<ExpenseDTO> getExpensesForAccount(long accountId, KeycloakAuthenticationToken authentication) {
 
     if (accountId == 0L) {
       logger.info("count was invoked for zero account id");
       return Collections.EMPTY_LIST;
     }
-    Collection<Expense> expenses = expenseRepository.findByAccountId(accountId);
+    Collection<Expense> expenses = expenseRepository.findByAccountIdAndUserId(accountId, securityService.getUserIdFromPrincipal(authentication));
     return converter.convertExpenses(expenses);
 
   }
 
   public Iterable<Expense> saveAll(List<Expense> expenses) {
-
     return expenseRepository.saveAll(expenses);
   }
 
-  public Optional<Expense> getExpenseById(long id) {
-    return expenseRepository.findById(id);
+  public Expense getExpenseById(long id, KeycloakAuthenticationToken authentication) {
+    return expenseRepository.findByIdAndUserId(id, securityService.getUserIdFromPrincipal(authentication));
   }
 
   public Expense save(Expense expense) throws NonExistingEntityException {
@@ -190,7 +172,6 @@ public class ExpensesService {
     if (!updated) {
       notifyCreatedExpense(expense.getId());
     }
-
     return expenseRepository.save(expense);
 
   }
@@ -199,25 +180,24 @@ public class ExpensesService {
     expensesSender.notifyCreatedExpense(id);
   }
 
-  public Iterable<Expense> findAll() {
-    return expenseRepository.findAll();
+  public Collection<Expense> findByUserId(KeycloakAuthenticationToken authentication) {
+    return expenseRepository.findByUserId(securityService.getUserIdFromPrincipal(authentication));
   }
 
-  public Collection<Expense> findByUserId(String id) {
-    return expenseRepository.findByUserId(id);
+  public Collection<Expense> findByAcc(long id, KeycloakAuthenticationToken authentication) {
+    return expenseRepository.findByAccountIdAndUserId(id, securityService.getUserIdFromPrincipal(authentication));
   }
 
-  public Optional<Expense> findById(long id) {
-    return expenseRepository.findById(id);
-  }
-
-  public List<Expense> searchExpensesInPeriod(Instant from, Instant to) throws BadRequestException {
+  public List<Expense> searchExpensesInPeriod(Instant from, Instant to,
+                                              KeycloakAuthenticationToken authentication) throws BadRequestException {
 
     if (from == null || to == null) {
       throw new BadRequestException("From and to cannot be null");
     }
+
     logger.info("Getting expenses from :" + from.toString() + " to " + to.toString());
-    List<Expense> expenses = expenseRepository.findByCreateDateBetween(from, to);
+    List<Expense> expenses = expenseRepository.findByCreateDateBetweenAndUserId(from, to,
+        securityService.getUserIdFromPrincipal(authentication));
     logger.info("found:" + expenses.size() + " expenses");
     return expenses;
 
@@ -232,7 +212,7 @@ public class ExpensesService {
     String userId = securityService.getUserIdFromPrincipal(principal);
     logger.info("obtained principal " + principal.getName() + "for user id: " + userId);
 
-    return processor.getAllACccountsOverViewForUser(userId, accountsClient.getAccountList(), monthsGoBack);
+    return processor.getAllACccountsOverViewForUser(principal, accountsClient.getAccountList(), monthsGoBack);
 
   }
 
@@ -268,12 +248,15 @@ public class ExpensesService {
 
   }
 
-  public Stream<Expense> findExpensesInPeriodForAccount(long accountID, Instant start, Instant end) {
-    return expenseRepository.findExpensesInPeriodForAccount(accountID, start, end);
+  public Stream<Expense> findExpensesInPeriodForAccount(long accountID, Instant start,
+                                                        Instant end, KeycloakAuthenticationToken token) {
+    return expenseRepository.findExpensesInPeriodForAccount(accountID, start, end,
+        securityService.getUserIdFromPrincipal(token));
   }
 
-  public Collection<Expense> findByAccountId(Long accId) {
-    return expenseRepository.findByAccountId(accId);
+  public Collection<Expense> findByAccountId(Long accId, KeycloakAuthenticationToken token) {
+    return expenseRepository.findByAccountIdAndUserId(accId,
+        securityService.getUserIdFromPrincipal(token));
   }
 
   public void updateExpenseToProcessed(JSONObject json) {
@@ -288,7 +271,8 @@ public class ExpensesService {
       exp.setTransactionId(transactionId);
       expenseRepository.save(exp);
     } else {
-      logger.warn("Expense with id :" + entityId + "is not present, but was notified for added in account. transaction id: " + transactionId);
+      logger.warn("Expense with id :" + entityId + "is not present, " +
+          "but was notified for added in account. transaction id: " + transactionId);
     }
 
   }
@@ -302,5 +286,13 @@ public class ExpensesService {
       e.printStackTrace();
     }
     return 0;
+  }
+
+  public int getExpensesCountForUser(long accountID, KeycloakAuthenticationToken authentication) {
+    if (accountID == 0L) {
+      logger.info("count was invoked for zero account id");
+      return 0;
+    }
+    return expenseRepository.selectCountByUserId(securityService.getUserIdFromPrincipal(authentication));
   }
 }

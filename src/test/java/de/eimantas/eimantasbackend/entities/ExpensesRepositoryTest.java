@@ -1,6 +1,7 @@
 package de.eimantas.eimantasbackend.entities;
 
 import com.google.common.collect.Iterables;
+import de.eimantas.eimantasbackend.TestUtils;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,7 +92,7 @@ public class ExpensesRepositoryTest {
     exp.setOrt("Test Ort");
     exp.setCreateDate(Instant.now().minus(1, ChronoUnit.DAYS));
     exp.setAccountId(1L);
-    exp.setUserId("1L");
+    exp.setUserId(TestUtils.USER_ID);
 
     this.expensesList.add(exp);
     // this.expensesList.add(expensesRepository.save(exp));
@@ -103,7 +104,7 @@ public class ExpensesRepositoryTest {
     exp2.setOrt("Bingen");
     exp2.setCreateDate(Instant.now().minus(40, ChronoUnit.DAYS));
     exp2.setAccountId(1L);
-    exp2.setUserId("1L");
+    exp2.setUserId(TestUtils.USER_ID);
 
     this.expensesList.add(exp2);
     expensesRepository.saveAll(expensesList);
@@ -134,7 +135,7 @@ public class ExpensesRepositoryTest {
     List<Expense> mapstream = Collections.emptyList();
 
 
-    try (Stream<Expense> stream = expensesRepository.findExpensesInPeriod(Instant.now().minus(30, ChronoUnit.DAYS), Instant.now())) {
+    try (Stream<Expense> stream = expensesRepository.findExpensesInPeriod(Instant.now().minus(30, ChronoUnit.DAYS), Instant.now(),TestUtils.USER_ID)) {
       mapstream = stream.collect(Collectors.toList());
     }
 
@@ -149,7 +150,7 @@ public class ExpensesRepositoryTest {
 
 
     logger.info("dates: " + Instant.now().minus(30, ChronoUnit.DAYS) + " and: " + Instant.now());
-    try (Stream<Expense> stream = expensesRepository.findExpensesInPeriodForAccount(1L, Instant.now().minus(30, ChronoUnit.DAYS), Instant.now())) {
+    try (Stream<Expense> stream = expensesRepository.findExpensesInPeriodForAccount(1L, Instant.now().minus(30, ChronoUnit.DAYS), Instant.now(),TestUtils.USER_ID)) {
       mapstream = stream.collect(Collectors.toList());
     }
 
@@ -166,7 +167,7 @@ public class ExpensesRepositoryTest {
     list.forEach((expense) -> logger.info(expense.getCreateDate().toString()));
 
     List<Expense> listfound = expensesRepository
-        .findExpensesInPeriodGlobaly(Instant.now().minus(30, ChronoUnit.DAYS), Instant.now());
+        .findExpensesInPeriodGlobaly(Instant.now().minus(30, ChronoUnit.DAYS), Instant.now(),TestUtils.USER_ID);
 
     assertThat(listfound.size()).isEqualTo(1);
 
@@ -175,8 +176,8 @@ public class ExpensesRepositoryTest {
   @Test
   public void getExpensesBetweenDatesSourceByName() throws Exception {
 
-    List<Expense> listfound = expensesRepository.findByCreateDateBetween(Instant.now().minus(30, ChronoUnit.DAYS),
-        Instant.now());
+    List<Expense> listfound = expensesRepository.findByCreateDateBetweenAndUserId(Instant.now().minus(30, ChronoUnit.DAYS),
+        Instant.now(),TestUtils.USER_ID);
 
     assertThat(listfound.size()).isEqualTo(1);
 

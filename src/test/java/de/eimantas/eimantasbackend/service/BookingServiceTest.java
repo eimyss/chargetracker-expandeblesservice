@@ -6,7 +6,10 @@ import de.eimantas.eimantasbackend.repo.BookingRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.keycloak.representations.AccessToken;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,9 +66,18 @@ public class BookingServiceTest {
   @Before
   public void setup() throws Exception {
     // auth stuff
-    bookingRepository.deleteAll();
     mockPrincipal = Mockito.mock(KeycloakAuthenticationToken.class);
     Mockito.when(mockPrincipal.getName()).thenReturn("test");
+
+    KeycloakPrincipal keyPrincipal = Mockito.mock(KeycloakPrincipal.class);
+    RefreshableKeycloakSecurityContext ctx = Mockito.mock(RefreshableKeycloakSecurityContext.class);
+
+    AccessToken token = Mockito.mock(AccessToken.class);
+    Mockito.when(token.getSubject()).thenReturn(TestUtils.USER_ID);
+    Mockito.when(ctx.getToken()).thenReturn(token);
+    Mockito.when(keyPrincipal.getKeycloakSecurityContext()).thenReturn(ctx);
+    Mockito.when(mockPrincipal.getPrincipal()).thenReturn(keyPrincipal);
+
 
     bookings = new ArrayList<>();
 
@@ -80,7 +92,7 @@ public class BookingServiceTest {
   @Test
   public void testFindAllBookings() throws Exception {
 
-    Iterable<Booking> found = bookingService.findAll();
+    Iterable<Booking> found = bookingService.findAll(mockPrincipal);
     assertThat(found).isNotNull();
     List<Booking> bookingsFound = StreamSupport.stream(found.spliterator(), false).collect(Collectors.toList());
     assertThat(bookingsFound).isNotNull();
@@ -91,7 +103,7 @@ public class BookingServiceTest {
   @Test
   public void testFindById() throws Exception {
 
-    Optional<Booking> found = bookingService.findById(bookings.get(0).getServerBookingId());
+    Optional<Booking> found = bookingService.findById(bookings.get(0).getServerBookingId(), mockPrincipal);
     assertThat(found).isPresent();
     assertThat(found.get().getName()).isNotNull();
     assertThat(found.get().getName()).isEqualTo(bookings.get(0).getName());
@@ -104,7 +116,6 @@ public class BookingServiceTest {
   public void testSaveBooking() throws Exception {
     Booking b = TestUtils.getBooking(123);
     b.setName("Saved in Test");
-
     Booking saved = bookingService.save(b);
     assertThat(saved).isNotNull();
     assertThat(saved.getServerBookingId()).isGreaterThan(0);

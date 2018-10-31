@@ -2,10 +2,8 @@ package de.eimantas.eimantasbackend.controller;
 
 import de.eimantas.eimantasbackend.TestUtils;
 import de.eimantas.eimantasbackend.entities.Booking;
-import de.eimantas.eimantasbackend.entities.converter.EntitiesConverter;
 import de.eimantas.eimantasbackend.entities.dto.BookingDTO;
 import de.eimantas.eimantasbackend.repo.BookingRepository;
-import de.eimantas.eimantasbackend.service.BookingService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,12 +65,6 @@ public class BookingControllerTest {
   @Autowired
   private BookingRepository bookingRepository;
 
-  @Autowired
-  private BookingService bookingService;
-
-  @Autowired
-  private EntitiesConverter entitiesConverter;
-
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -110,7 +102,7 @@ public class BookingControllerTest {
     RefreshableKeycloakSecurityContext ctx = Mockito.mock(RefreshableKeycloakSecurityContext.class);
 
     AccessToken token = Mockito.mock(AccessToken.class);
-    Mockito.when(token.getSubject()).thenReturn("1L");
+    Mockito.when(token.getSubject()).thenReturn(TestUtils.USER_ID);
     Mockito.when(ctx.getToken()).thenReturn(token);
     Mockito.when(keyPrincipal.getKeycloakSecurityContext()).thenReturn(ctx);
     Mockito.when(mockPrincipal.getPrincipal()).thenReturn(keyPrincipal);
@@ -121,10 +113,10 @@ public class BookingControllerTest {
   @Test
   public void readSingleBooking() throws Exception {
 
-    mockMvc.perform(get("/booking/get/" + this.bookingsList.get(0).getServerBookingId())).andExpect(status().isOk())
+    mockMvc.perform(get("/booking/get/" + this.bookingsList.get(0).getServerBookingId()).principal(mockPrincipal)).andExpect(status().isOk())
         .andDo(MockMvcResultHandlers.print())
         .andExpect(content().contentType(contentType))
-        .andExpect(jsonPath("$.id", is(this.bookingsList.get(0).getId())))
+        .andExpect(jsonPath("$.id", is(((Long)this.bookingsList.get(0).getId()).intValue())))
         .andExpect(jsonPath("$.serverBookingId", is(((Long) this.bookingsList.get(0).getServerBookingId()).intValue())))
         .andExpect(jsonPath("$.name", is("Booking")));
   }
@@ -138,7 +130,7 @@ public class BookingControllerTest {
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(jsonPath("$[0].serverBookingId", is(((Long) this.bookingsList.get(0).getServerBookingId()).intValue())))
         .andExpect(jsonPath("$[0].name", is("Booking")))
-        .andExpect(jsonPath("$[1].id", is(this.bookingsList.get(1).getId())));
+        .andExpect(jsonPath("$[1].id", is(((Long)this.bookingsList.get(1).getId()).intValue())));
   }
 
   @Test

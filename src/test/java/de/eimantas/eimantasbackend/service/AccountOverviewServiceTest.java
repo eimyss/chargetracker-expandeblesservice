@@ -91,7 +91,7 @@ public class AccountOverviewServiceTest {
     RefreshableKeycloakSecurityContext ctx = Mockito.mock(RefreshableKeycloakSecurityContext.class);
 
     AccessToken token = Mockito.mock(AccessToken.class);
-    Mockito.when(token.getSubject()).thenReturn("Subject-111");
+    Mockito.when(token.getSubject()).thenReturn(TestUtils.USER_ID);
     Mockito.when(ctx.getToken()).thenReturn(token);
     Mockito.when(keyPrincipal.getKeycloakSecurityContext()).thenReturn(ctx);
     Mockito.when(mockPrincipal.getPrincipal()).thenReturn(keyPrincipal);
@@ -108,7 +108,7 @@ public class AccountOverviewServiceTest {
       for (int y = 0; y < expensesForMonth; y++) {
         Expense e = TestUtils.getExpense(i);
         e.setAccountId(1L);
-        e.setUserId("1L");
+        e.setUserId(TestUtils.USER_ID);
         expenses.add(e);
       }
     }
@@ -120,7 +120,7 @@ public class AccountOverviewServiceTest {
   @Test
   public void getTotalAmountForAcc() throws Exception {
 
-    BigDecimal totalAmount = expensesService.getTotalAmountForAcc(1L);
+    BigDecimal totalAmount = expensesService.getTotalAmountForAcc(1L,mockPrincipal);
 
     assertThat(totalAmount).isNotNull();
     assertThat(totalAmount).isEqualTo(BigDecimal.valueOf(180L));
@@ -131,7 +131,7 @@ public class AccountOverviewServiceTest {
   @Test
   public void getTotalAmountForAccNoId() throws Exception {
 
-    BigDecimal totalAmount = expensesService.getTotalAmountForAcc(0);
+    BigDecimal totalAmount = expensesService.getTotalAmountForAcc(0,mockPrincipal);
     assertThat(totalAmount).isNotNull();
     assertThat(totalAmount).isEqualTo(BigDecimal.ZERO);
 

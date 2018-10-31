@@ -47,23 +47,21 @@ public class BookingController {
   @CrossOrigin(origins = "*")
   public Collection<BookingDTO> getBookings(Principal principal) {
 
-    logger.info(String.format("returning count: %d",
-        StreamSupport.stream(bookingService.findAll().spliterator(), false)
-            .collect(Collectors.toList()).size()));
+    Collection bookings = StreamSupport.stream(bookingService.findAll((KeycloakAuthenticationToken) principal)
+        .spliterator(), false).collect(Collectors.toList());
 
-    return StreamSupport.stream(bookingService.findAll().spliterator(), false)
-        .map(e -> entitiesConverter.getBookingDTO(e))
-        .collect(Collectors.toList());
+    logger.info(String.format("returning count: %d",
+        bookings.size()));
+
+    return bookings;
   }
 
 
   @GetMapping("/get/{id}")
   @CrossOrigin(origins = "*")
-  public BookingDTO getBookingById(@PathVariable long id) throws NonExistingEntityException {
+  public BookingDTO getBookingById(@PathVariable long id, Principal principal) throws NonExistingEntityException {
     logger.info("get booking for id: " + id);
-
-    Optional<Booking> bookingOptional = bookingService.findById(id);
-
+    Optional<Booking> bookingOptional = bookingService.findById(id, (KeycloakAuthenticationToken) principal);
     if (!bookingOptional.isPresent()) {
       logger.warn("booking with id : " + id + "is not present");
       throw new NonExistingEntityException("booking by id: '" + id + "' is null");
@@ -85,20 +83,16 @@ public class BookingController {
     }
 
     logger.info("creating booking: " + booking.toString());
-
     KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
     String userId = securityService.getUserIdFromPrincipal(userAuth);
-
     logger.info("setting epxense for userid: " + userId);
 
     Booking book = entitiesConverter.getBookingFromDTO(booking);
     book.setUserId(userId);
     Booking response = bookingService.save(book);
     logger.info("booking is saved: " + response.toString());
-
     logger.info("Notfiying about created booking");
     sender.notifyCreateExpense(response.getServerBookingId());
-
     logger.debug("returning booked dto");
     return entitiesConverter.getBookingDTO(response);
 

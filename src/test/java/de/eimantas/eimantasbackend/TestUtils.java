@@ -12,6 +12,8 @@ import java.time.*;
 public class TestUtils {
 
 
+  public static final String USER_ID = "TEST_USER";
+
   public static Expense getExpense() {
 
     Expense exp = new Expense();
@@ -90,6 +92,7 @@ public class TestUtils {
     booking.setEndDate(LocalDateTime.now());
     booking.setStartdate(LocalDateTime.now());
     booking.setName("Booking");
+    booking.setUserId(USER_ID);
     booking.setProjectId(2);
     return booking;
   }

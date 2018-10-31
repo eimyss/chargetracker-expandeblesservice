@@ -13,6 +13,8 @@ import java.time.ZoneOffset;
 public class PopulateStuff {
 
 
+  public static final String TEST_USER_ID ="9a204126-12b9-4efe-9d9b-3808aba51ba3";
+
   public static Expense getExpense() {
 
     Expense exp = new Expense();

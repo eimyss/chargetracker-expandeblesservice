@@ -76,7 +76,7 @@ public class DateHelperTest {
     LocalDateTime ago = today.minus(Period.ofMonths(6));
 
     boolean answer = DateHelper.isInMonth(6, ago.toInstant(ZoneOffset.UTC));
-    assertThat(answer).isEqualTo(true);
+    assertThat(answer).isEqualTo(false);
 
   }
 

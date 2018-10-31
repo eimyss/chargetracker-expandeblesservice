@@ -60,58 +60,51 @@ public class ExpenseController {
   @GetMapping(value = "/get/all", produces = MediaType.APPLICATION_JSON_VALUE)
   @CrossOrigin(origins = "*")
   public Collection<ExpenseDTO> getExpenses(Principal principal) {
-
-    logger.info(String.format("returning count: %d",
-        StreamSupport.stream(expensesService.findAll().spliterator(), false)
-            .collect(Collectors.toList()).size()));
-    return StreamSupport.stream(expensesService.findAll().spliterator(), false)
-        .map(e -> entitiesConverter.getExpenseDTO(e))
+    Collection expenses = StreamSupport.stream(expensesService.findByUserId
+        ((KeycloakAuthenticationToken) principal).spliterator(), false)
         .collect(Collectors.toList());
+    logger.info(String.format("returning count: %d",
+        expenses.size()));
+    return expenses;
   }
 
   @GetMapping(value = "/user-expenses", produces = MediaType.APPLICATION_JSON_VALUE)
   @CrossOrigin(origins = "*")
   @Transactional
   public Collection<ExpenseDTO> getStuffFromUser(Principal principal) {
-
-    KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-
-    String userId = securityService.getUserIdFromPrincipal(userAuth);
-
+    String userId = securityService.getUserIdFromPrincipal((KeycloakAuthenticationToken) principal);
     logger.info("requesting expenses for user: " + userId);
-    logger.info(String.format("returning count: %d",
-        StreamSupport.stream(expensesService.findByUserId(userId).spliterator(), false)
-            .collect(Collectors.toList()).size()));
-
-    return StreamSupport.stream(expensesService.findByUserId(userId).spliterator(), false)
+    Collection expenses = StreamSupport.stream(
+        expensesService.findByUserId((KeycloakAuthenticationToken) principal).spliterator(), false)
         .map(e -> entitiesConverter.getExpenseDTO(e))
         .collect(Collectors.toList());
+    logger.info(String.format("returning count: %d",
+        expenses.size()));
+
+    return expenses;
 
   }
 
 
   @GetMapping("/get/{id}")
   @CrossOrigin(origins = "*")
-  public ExpenseDTO getExpenseById(@PathVariable long id) throws NonExistingEntityException {
+  public ExpenseDTO getExpenseById(@PathVariable long id, Principal principal) throws NonExistingEntityException {
     logger.info("get expense for id: " + id);
-
-    Optional<Expense> expenseOptional = expensesService.findById(id);
-
-    if (!expenseOptional.isPresent()) {
+    Expense expenseOptional = expensesService.getExpenseById(id, (KeycloakAuthenticationToken) principal);
+    if (expenseOptional == null) {
       logger.warn("expense with id : " + id + "is not present");
       throw new NonExistingEntityException("Expense by id: '" + id + "' is null");
     }
     logger.info("expense found!");
-    return entitiesConverter.getExpenseDTO(expenseOptional.get());
+    return entitiesConverter.getExpenseDTO(expenseOptional);
   }
 
 
   @GetMapping("/account/{accountId}")
   @CrossOrigin(origins = "*")
-  public List<ExpenseDTO> getExpenseByAccount(@PathVariable long accountId) {
+  public List<ExpenseDTO> getExpenseByAccount(@PathVariable long accountId, Principal principal) {
     logger.info("get expense for account id: " + accountId);
-
-    List<ExpenseDTO> expenses = expensesService.getExpensesForAccount(accountId);
+    List<ExpenseDTO> expenses = expensesService.getExpensesForAccount(accountId, (KeycloakAuthenticationToken) principal);
     logger.info("returning " + expenses.size() + " expsenses");
     return expenses;
   }
@@ -121,17 +114,12 @@ public class ExpenseController {
   @CrossOrigin(origins = "*")
   @Transactional
   public List<ExpenseDTO> populateExpenses(Principal principal, @PathVariable long accountId) {
-    KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-
-    String userId = securityService.getUserIdFromPrincipal(userAuth);
-
+    String userId = securityService.getUserIdFromPrincipal((KeycloakAuthenticationToken) principal);
     List<Expense> expenses = new ArrayList<>();
-
     // populate acc with expenses
     int monthsGoBack = 8;
     int expensesForMonth = 8;
     for (int i = 0; i < monthsGoBack; i++) {
-      // whats ussual second name for iteration?
       for (int y = 0; y < expensesForMonth; y++) {
         Expense e = PopulateStuff.getExpense(i);
         e.setUserId(userId);
@@ -139,7 +127,6 @@ public class ExpenseController {
         expenses.add(e);
       }
     }
-
     Iterable<Expense> expensesSaved = expensesService.saveAll(expenses);
     logger.info("succesfully populated stuff");
     List<Expense> savedList = new ArrayList<Expense>();
@@ -152,16 +139,12 @@ public class ExpenseController {
   @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
   @CrossOrigin(origins = "*")
   public Collection<ExpenseDTO> searchExpenses(Principal principal, @RequestParam("name") String name) {
-
-    KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-    String userId = securityService.getUserIdFromPrincipal(userAuth);
     logger.info("Getting search for string: " + name);
-    List<Expense> foundexpenses = expensesService.searchExpensesByName(name);
+    List<Expense> foundexpenses = expensesService.searchExpensesForUser(name, (KeycloakAuthenticationToken) principal);
     logger.info("found " + foundexpenses.size() + " for string" + name);
     return StreamSupport.stream(foundexpenses.spliterator(), false)
         .map(e -> entitiesConverter.getExpenseDTO(e))
         .collect(Collectors.toList());
-
   }
 
 
@@ -175,30 +158,19 @@ public class ExpenseController {
     if (fromDate == null || toDate == null) {
       throw new BadRequestException("From and To Dates cannot be null!");
     }
-
     logger.info("getting expenses in period from " + fromDate.toString()
         + " to " + toDate.toString());
-    // prep for future
-    KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-    String userId = securityService.getUserIdFromPrincipal(userAuth);
-    logger.info("Requested for user: " + userId);
-    List<Expense> expenses = expensesService.searchExpensesInPeriod(fromDate.toInstant(), toDate.toInstant());
-
+    List<Expense> expenses = expensesService.searchExpensesInPeriod(fromDate.toInstant(), toDate.toInstant(), (KeycloakAuthenticationToken) principal);
     logger.info("found: '" + expenses.size() + "' expenses");
-
     return entitiesConverter.convertExpenses(expenses);
-
-
   }
 
 
   @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
   @CrossOrigin(origins = "*")
   public Collection<ExpenseCategory> getTypes() {
-
     logger.info("getting types for expenses");
     return Arrays.asList(ExpenseCategory.values());
-
   }
 
 
@@ -207,12 +179,9 @@ public class ExpenseController {
   @Transactional
   public Collection<ExpenseDTO> getImportedExpenses(Principal principal, @PathVariable long accountId) throws BadRequestException {
 
-
     KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
     String userId = securityService.getUserIdFromPrincipal(userAuth);
     logger.info("got user: " + userId);
-
-
     logger.info("reading csv list");
     List<CSVExpenseDTO> dtos = dataProcessor.loadObjectList(CSVExpenseDTO.class, "data.csv");
     logger.info("size read: " + dtos.size());
@@ -371,6 +340,13 @@ public class ExpenseController {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public @ResponseBody
   ErrorDesc handleException(BadRequestException e) {
+    return new ErrorDesc(e.getMessage());
+  }
+
+  @ExceptionHandler(SecurityException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public @ResponseBody
+  ErrorDesc handleException(SecurityException e) {
     return new ErrorDesc(e.getMessage());
   }
 

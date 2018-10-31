@@ -91,28 +91,25 @@ public class OverviewProcessor {
 
   private List<Expense> getUnexpenced(List<Expense> qualified) {
 
-    List<Expense> unexpenced = qualified.stream().filter(new Predicate<Expense>() {
+    return qualified.stream().filter(new Predicate<Expense>() {
       @Override
       public boolean test(Expense expense) {
         return !expense.isExpensed();
       }
     }).collect(Collectors.toList());
 
-    return unexpenced;
-
   }
 
   private List<Expense> getQualifiedExpenses(int month, Stream<Expense> expensesStream) {
 
     // get expenses that are fitting the date
-    List<Expense> qualified = expensesStream.filter(new Predicate<Expense>() {
+    return expensesStream.filter(new Predicate<Expense>() {
       @Override
       public boolean test(Expense expense) {
         return DateHelper.isInMonth(month, expense.getCreateDate());
       }
     }).collect(Collectors.toList());
 
-    return qualified;
   }
 
 
@@ -133,13 +130,13 @@ public class OverviewProcessor {
 
     AccountOverViewDTO dto = new AccountOverViewDTO();
     dto.setRefAccountId(accountID);
-    dto.setTotalExpensesCount(expensesService.getExpensesCountForAcc(accountID));
-    dto.setCountExpenses(expensesService.getExpensesCountForAcc(accountID));
-    List<CategoryAndCountOverview> stats = expensesService.getCategoryAndCountForAcc(accountID);
+    dto.setTotalExpensesCount(expensesService.getExpensesCountForUser(accountID, authentication));
+    dto.setCountExpenses(expensesService.getExpensesCountForAcc(accountID, authentication));
+    List<CategoryAndCountOverview> stats = expensesService.getCategoryAndCountForAcc(accountID, authentication);
     logger.info("got stats for account id: " + accountID + " size: " + stats.size());
     dto.setCategoryAndCountList(stats);
 
-    dto.setTotal(expensesService.getTotalAmountForAcc(accountID));
+    dto.setTotal(expensesService.getTotalAmountForAcc(accountID, authentication));
 
     // get current week
     LocalDate date = LocalDate.now();
@@ -149,7 +146,8 @@ public class OverviewProcessor {
     LocalDateTime begin = DateHelper.getBeginOfWeek(weekNumber);
     LocalDateTime end = DateHelper.getEndOfWeek(weekNumber);
 
-    Stream<Expense> expensesForWeek = expensesService.findExpensesInPeriodForAccount(accountID, begin.toInstant(ZoneOffset.UTC), end.toInstant(ZoneOffset.UTC));
+    Stream<Expense> expensesForWeek = expensesService.findExpensesInPeriodForAccount(accountID,
+        begin.toInstant(ZoneOffset.UTC), end.toInstant(ZoneOffset.UTC), authentication);
 
     Map<ExpenseCategory, List<Expense>> expensesPerType = expensesForWeek
         .collect(groupingBy(Expense::getCategory));
@@ -173,23 +171,21 @@ public class OverviewProcessor {
 
   }
 
-  public AllAccountsOverViewDTO getAllACccountsOverViewForUser(String userId, Collection<Long> accountIds, int monthsGoBack) {
+  public AllAccountsOverViewDTO getAllACccountsOverViewForUser(KeycloakAuthenticationToken userId, Collection<Long> accountIds, int monthsGoBack) {
 
-    logger.info("getAllACccountsOverViewForUser for user id: " + userId);
+    logger.info("getAllACccountsOverViewForUser for user id: " + userId.toString());
 
     Map<Long, List<MonthAndAmountOverview>> overview = new HashMap<Long, List<MonthAndAmountOverview>>();
     AllAccountsOverViewDTO dto = new AllAccountsOverViewDTO();
 
     dto.setMonthBack(monthsGoBack);
-    dto.setUserId(userId);
+    //dto.setUserId(userId);
 
     logger.info("got accounts List: " + accountIds.size());
-
     for (Long accId : accountIds) {
-      Collection<Expense> expenses = expensesService.findByAccountId(accId);
+      Collection<Expense> expenses = expensesService.findByAccountId(accId, userId);
       logger.info("found " + expenses.size() + " for account id: " + accId);
       overview.put(accId, getPerMonthOverView(monthsGoBack, expenses, dto));
-
     }
 
     dto.setOverview(overview);

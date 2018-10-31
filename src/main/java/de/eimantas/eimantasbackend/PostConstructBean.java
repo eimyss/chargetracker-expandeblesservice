@@ -3,6 +3,7 @@ package de.eimantas.eimantasbackend;
 import de.eimantas.eimantasbackend.entities.Booking;
 import de.eimantas.eimantasbackend.entities.Expense;
 import de.eimantas.eimantasbackend.entities.ExpenseCategory;
+import de.eimantas.eimantasbackend.helpers.PopulateStuff;
 import de.eimantas.eimantasbackend.repo.BookingRepository;
 import de.eimantas.eimantasbackend.repo.ExpenseRepository;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class PostConstructBean implements ApplicationRunner {
     for (int i = 1; i < 11; i++) {
       Expense exp = new Expense();
       exp.setAccountId(1);
-      exp.setUserId("ee9fb974-c2c2-45f8-b60e-c22d9f00273f");
+      exp.setUserId(PopulateStuff.TEST_USER_ID);
       exp.setName("Generated");
       exp.setExpensable(true);
       exp.setExpensed((i % 2) == 0);
@@ -55,7 +56,7 @@ public class PostConstructBean implements ApplicationRunner {
     logger.info("Populating bookings");
     Booking booking = new Booking();
     booking.setName("populated");
-    booking.setUserId("ee9fb974-c2c2-45f8-b60e-c22d9f00273f");
+    booking.setUserId(PopulateStuff.TEST_USER_ID);
     booking.setProjectId(2);
     booking.setStartdate(LocalDateTime.now());
     booking.setEndDate(LocalDateTime.now());

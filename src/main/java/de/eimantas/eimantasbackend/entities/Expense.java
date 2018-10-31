@@ -26,7 +26,8 @@ public class Expense {
   @Column(length = 1000)
   String name;
   private String ort;
-  private String userId;
+  private @NonNull
+  String userId;
   private Instant createDate;
   private boolean processed;
   private long transactionId;

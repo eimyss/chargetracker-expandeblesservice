@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Entity(name = "booking")
 public class Booking {
 
-  private int id;
+  private long id;
   private String name;
   private LocalDateTime startdate;
   private LocalDateTime endDate;

@@ -104,7 +104,7 @@ public class MultipleExpensesControllerTest {
     RefreshableKeycloakSecurityContext ctx = Mockito.mock(RefreshableKeycloakSecurityContext.class);
 
     AccessToken token = Mockito.mock(AccessToken.class);
-    Mockito.when(token.getSubject()).thenReturn("1L");
+    Mockito.when(token.getSubject()).thenReturn(TestUtils.USER_ID);
     Mockito.when(ctx.getToken()).thenReturn(token);
     Mockito.when(keyPrincipal.getKeycloakSecurityContext()).thenReturn(ctx);
     Mockito.when(mockPrincipal.getPrincipal()).thenReturn(keyPrincipal);
@@ -120,7 +120,7 @@ public class MultipleExpensesControllerTest {
       for (int y = 0; y < expensesForMonth; y++) {
         Expense e = TestUtils.getExpense(i);
         e.setAccountId(1L);
-        e.setUserId("1L");
+        e.setUserId(TestUtils.USER_ID);
         expensesList.add(e);
 
       }
@@ -151,16 +151,12 @@ public class MultipleExpensesControllerTest {
   @Test
   @Transactional
   public void readSingleExpense() throws Exception {
-    mockMvc.perform(get("/expense/get/" + this.expensesList.get(0).getId())).andExpect(status().isOk())
+    mockMvc.perform(get("/expense/get/" + this.expensesList.get(0).getId()).principal(mockPrincipal)).andExpect(status().isOk())
         .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
         .andExpect(jsonPath("$.id", is(this.expensesList.get(0).getId().intValue())))
         .andExpect(jsonPath("$.name", is("uploaded"))).andExpect(jsonPath("$.category", is("STEUER")));
 
-
-    mockMvc.perform(get("/expense/get/" + this.expensesList2.get(0).getId())).andExpect(status().isOk())
-        .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
-        .andExpect(jsonPath("$.id", is(this.expensesList2.get(0).getId().intValue())))
-        .andExpect(jsonPath("$.name", is("uploaded"))).andExpect(jsonPath("$.category", is("STEUER")));
+    mockMvc.perform(get("/expense/get/" + this.expensesList2.get(0).getId())).andExpect(status().isBadRequest());
 
   }
 
@@ -191,7 +187,7 @@ public class MultipleExpensesControllerTest {
     mockMvc.perform(get("/expense/get/period?from=" + formatted.format(from) + "&to=" + formatted.format(to)).principal(mockPrincipal)).andExpect(status().isOk())
         .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(greaterThan(2))));
+        .andExpect(jsonPath("$", hasSize(greaterThan(1))));
 
 
   }
@@ -204,7 +200,7 @@ public class MultipleExpensesControllerTest {
     // given(controller.principal).willReturn(allEmployees);
     mockMvc.perform(get("/expense/get/all").principal(mockPrincipal)).andExpect(status().isOk())
         .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
-        .andExpect(jsonPath("$", hasSize(8)));
+        .andExpect(jsonPath("$", hasSize(4)));
 
   }
 
@@ -212,12 +208,10 @@ public class MultipleExpensesControllerTest {
   @Transactional
   @Ignore
   public void readCSVExpenses() throws Exception {
-
-    long sizeBefore = expensesRepository.countByAccountId(1L);
-
+    long sizeBefore = expensesRepository.countByAccountIdAndUserId(1L, TestUtils.USER_ID);
     mockMvc.perform(get("/expense/csv/read/" + 1L).principal(mockPrincipal)).andExpect(status().isOk())
         .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType));
-    logger.info("size before: " + sizeBefore + "size after: " + expensesRepository.countByAccountId(1L));
+    logger.info("size before: " + sizeBefore + "size after: " + expensesRepository.countByAccountIdAndUserId(1L, TestUtils.USER_ID));
   }
 
 
@@ -241,6 +235,7 @@ public class MultipleExpensesControllerTest {
 
     ExpenseDTO exp = TestUtils.getExpenseDTO();
     exp.setAccountId(1L);
+    exp.setUserId(TestUtils.USER_ID);
     String bookmarkJson = json(exp);
 
     this.mockMvc.perform(post("/expense/add").principal(mockPrincipal).contentType(contentType).content(bookmarkJson))
@@ -266,14 +261,13 @@ public class MultipleExpensesControllerTest {
   @Transactional
   public void getExpensesByAccountId() throws Exception {
 
-    this.mockMvc.perform(get("/expense/account/" + 1L).contentType(contentType))
+    this.mockMvc.perform(get("/expense/account/" + 1L).contentType(contentType).principal(mockPrincipal))
         .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
         .andExpect(jsonPath("$", hasSize(4)));
 
 
     this.mockMvc.perform(get("/expense/account/" + 2L).contentType(contentType))
-        .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
-        .andExpect(jsonPath("$", hasSize(4)));
+        .andDo(MockMvcResultHandlers.print()).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -287,11 +281,9 @@ public class MultipleExpensesControllerTest {
         .andExpect(jsonPath("$.countExpenses", is(4)));
 
 
+    // TODO throw security exception
     mockMvc.perform(get("/expense/overview/" + 2).principal(mockPrincipal)).andExpect(status().isOk())
-        .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
-        .andExpect(jsonPath("$.refAccountId", is(2)))
-        .andExpect(jsonPath("$.total", is(40)))
-        .andExpect(jsonPath("$.countExpenses", is(4)));
+        .andDo(MockMvcResultHandlers.print());
 
   }
 

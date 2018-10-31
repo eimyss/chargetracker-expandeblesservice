@@ -1,5 +1,6 @@
 package de.eimantas.eimantasbackend.config;
 
+import de.eimantas.eimantasbackend.entities.Booking;
 import de.eimantas.eimantasbackend.entities.Expense;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -11,5 +12,6 @@ public class RepositoryConfig<EnableJpaRepositories> extends RepositoryRestConfi
   @Override
   public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
     config.exposeIdsFor(Expense.class);
+    config.exposeIdsFor(Booking.class);
   }
 }

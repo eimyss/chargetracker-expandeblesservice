@@ -141,7 +141,7 @@ public class ExpensesControllerTest {
   public void readSingleExpense() throws Exception {
 
     expensesRepository.findAll().forEach(expense -> logger.info("expense: " + expense.toString()));
-    mockMvc.perform(get("/expense/get/" + this.expensesList.get(0).getId())).andExpect(status().isOk())
+    mockMvc.perform(get("/expense/get/" + this.expensesList.get(0).getId()).principal(mockPrincipal)).andExpect(status().isOk())
         .andDo(MockMvcResultHandlers.print())
         .andExpect(content().contentType(contentType))
         .andExpect(jsonPath("$.id", is(this.expensesList.get(0).getId().intValue())))
@@ -188,6 +188,7 @@ public class ExpensesControllerTest {
   public void createExpense() throws Exception {
 
     ExpenseDTO exp = TestUtils.getExpenseDTO();
+    exp.setUserId(TestUtils.USER_ID);
     String bookmarkJson = json(exp);
 
     this.mockMvc.perform(post("/expense/add").principal(mockPrincipal).contentType(contentType).content(bookmarkJson))
@@ -353,7 +354,7 @@ public class ExpensesControllerTest {
 
   @Test
   public void testGetExpensesOverviewNoAuth() throws Exception {
-    mockMvc.perform(get("/expense/overview/expenses/" + 1)).andExpect(status().isOk());
+    mockMvc.perform(get("/expense/overview/expenses/" + 1)).andExpect(status().isBadRequest());
   }
 
 

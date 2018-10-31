@@ -46,6 +46,11 @@ log4j:
         type: INFO
 server:
   port: 8090
+logging:
+  file: myapplication-int.log
+  level:
+    org.keycloak: DEBUG
+    org.springframework.security: DEBUG
 feign:
   client:
     config:
