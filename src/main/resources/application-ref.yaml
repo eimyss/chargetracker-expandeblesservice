@@ -49,8 +49,8 @@ server:
 logging:
   file: myapplication-int.log
   level:
-    org.keycloak: DEBUG
-    org.springframework.security: DEBUG
+    org.keycloak: INFO
+    org.springframework.security: INFO
 feign:
   client:
     config:
