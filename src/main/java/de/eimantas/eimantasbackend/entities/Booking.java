@@ -20,7 +20,7 @@ public class Booking {
   private String name;
   private LocalDateTime startdate;
   private LocalDateTime endDate;
-  private int projectId;
+  private long projectId;
   @Id
   @GeneratedValue
   private long serverBookingId;
