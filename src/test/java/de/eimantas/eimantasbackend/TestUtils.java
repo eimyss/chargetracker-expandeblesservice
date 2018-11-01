@@ -57,6 +57,7 @@ public class TestUtils {
     exp.setCategory(ExpenseCategory.STEUER.toString());
     exp.setBetrag(BigDecimal.TEN);
     exp.setExpensable(true);
+    exp.setUserId(USER_ID);
     exp.setExpensed(false);
     exp.setPeriodic(false);
     exp.setCreateDate(Instant.now());
@@ -90,7 +91,7 @@ public class TestUtils {
     Booking booking = new Booking();
     booking.setId(id);
     booking.setEndDate(LocalDateTime.now());
-    booking.setStartdate(LocalDateTime.now());
+    booking.setStartDate(LocalDateTime.now());
     booking.setName("Booking");
     booking.setUserId(USER_ID);
     booking.setProjectId(2);
@@ -101,7 +102,7 @@ public class TestUtils {
     BookingDTO booking = new BookingDTO();
     booking.setId(i);
     booking.setEndDate(LocalDateTime.now());
-    booking.setStartdate(LocalDateTime.now());
+    booking.setStartDate(LocalDateTime.now());
     booking.setName("Booking");
     booking.setProjectId(2);
     return booking;

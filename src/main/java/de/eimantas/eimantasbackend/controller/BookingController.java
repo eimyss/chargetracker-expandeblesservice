@@ -79,12 +79,10 @@ public class BookingController {
     if (booking.getServerBookingId() > 0) {
       logger.warn("trying to post expense with Server ID ");
       throw new BadRequestException("cannot save a new expense with Server id!");
-
     }
 
     logger.info("creating booking: " + booking.toString());
-    KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-    String userId = securityService.getUserIdFromPrincipal(userAuth);
+    String userId = securityService.getUserIdFromPrincipal((KeycloakAuthenticationToken) principal);
     logger.info("setting epxense for userid: " + userId);
 
     Booking book = entitiesConverter.getBookingFromDTO(booking);
@@ -92,7 +90,7 @@ public class BookingController {
     Booking response = bookingService.save(book);
     logger.info("booking is saved: " + response.toString());
     logger.info("Notfiying about created booking");
-    sender.notifyCreateExpense(response.getServerBookingId());
+    sender.notifyCreateExpense((KeycloakAuthenticationToken) principal, response);
     logger.debug("returning booked dto");
     return entitiesConverter.getBookingDTO(response);
 

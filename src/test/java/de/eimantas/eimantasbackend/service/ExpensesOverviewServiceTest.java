@@ -190,7 +190,7 @@ public class ExpensesOverviewServiceTest {
 
   }
 
-  @Test (expected = SecurityException.class)
+  @Test(expected = SecurityException.class)
   public void readGlobalOverivewNoAuth() throws Exception {
 
     Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, null);
@@ -223,11 +223,8 @@ public class ExpensesOverviewServiceTest {
     Expense expOpt = expensesService.getExpenseById(expenses.get(0).getId(), mockPrincipal);
     assertThat(expOpt).isNotNull();
     String newName = "Name edited";
-
     expOpt.setName(newName);
-
-    expensesService.save(expOpt);
-
+    expensesService.save(expOpt, mockPrincipal);
     Expense expOptEdited = expensesService.getExpenseById(expenses.get(0).getId(), mockPrincipal);
     assertThat(expOptEdited).isNotNull();
     assertThat(expOptEdited.getName()).isEqualTo(newName);
@@ -239,7 +236,7 @@ public class ExpensesOverviewServiceTest {
   @Test
   public void testGetExpensesCountNoId() throws Exception {
 
-    int count = expensesService.getExpensesCountForAcc(0,mockPrincipal);
+    int count = expensesService.getExpensesCountForAcc(0, mockPrincipal);
     assertThat(count).isEqualTo(0);
 
   }
@@ -247,14 +244,14 @@ public class ExpensesOverviewServiceTest {
   @Test
   @Ignore
   public void testNotifyCreatedExpense() throws Exception {
-    expensesService.notifyCreatedExpense(10L);
+    expensesService.notifyCreatedExpense(mockPrincipal,TestUtils.getExpense(1));
   }
 
 
   @Test
   public void testGetCategoryAndCount() throws Exception {
 
-    List<CategoryAndCountOverview> result = expensesService.getCategoryAndCountForAcc(1L,mockPrincipal);
+    List<CategoryAndCountOverview> result = expensesService.getCategoryAndCountForAcc(1L, mockPrincipal);
     assertThat(result).isNotNull();
     assertThat(result.size()).isEqualTo(1);
 

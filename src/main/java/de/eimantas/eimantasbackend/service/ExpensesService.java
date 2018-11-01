@@ -142,7 +142,7 @@ public class ExpensesService {
     return expenseRepository.findByIdAndUserId(id, securityService.getUserIdFromPrincipal(authentication));
   }
 
-  public Expense save(Expense expense) throws NonExistingEntityException {
+  public Expense save(Expense expense, KeycloakAuthenticationToken authentication) throws NonExistingEntityException {
 
     boolean updated = false;
     logger.info("Saving expense");
@@ -150,6 +150,7 @@ public class ExpensesService {
       throw new IllegalArgumentException("Expense cannot be null");
     }
 
+    expense.setUserId(securityService.getUserIdFromPrincipal(authentication));
 
     if (expense.getId() != null) {
       logger.info("Expense is updated");
@@ -166,18 +167,16 @@ public class ExpensesService {
     }
 
     Expense expenseSaved = expenseRepository.save(expense);
-
-
     logger.info("Notifiying about created expense");
     if (!updated) {
-      notifyCreatedExpense(expense.getId());
+      notifyCreatedExpense(authentication, expense);
     }
     return expenseRepository.save(expense);
 
   }
 
-  public void notifyCreatedExpense(Long id) {
-    expensesSender.notifyCreatedExpense(id);
+  public void notifyCreatedExpense(KeycloakAuthenticationToken authentication, Expense expense) {
+    expensesSender.notifyCreatedExpense(authentication, expense);
   }
 
   public Collection<Expense> findByUserId(KeycloakAuthenticationToken authentication) {

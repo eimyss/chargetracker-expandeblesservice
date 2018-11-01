@@ -232,21 +232,11 @@ public class ExpenseController {
 
     logger.info("creating expense: " + expense.toString());
 
-    KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-    String userId = securityService.getUserIdFromPrincipal(userAuth);
-
-    logger.info("setting epxense for userid: " + userId);
-
 
     logger.info("Publishing expenses to messaging");
-    //     boolean sent = expensesSender.send(expense);
-    //logger.info("expense is sent: " +sent);
-
-
     //expense.setUserId(user.getId());
     Expense exp = entitiesConverter.getExpenseFromDTO(expense);
-    exp.setUserId(userId);
-    Expense response = expensesService.save(exp);
+    Expense response = expensesService.save(exp, (KeycloakAuthenticationToken) principal);
     logger.info("Expense is saved: " + response.toString());
     ExpenseDTO saved = entitiesConverter.getExpenseDTO(response);
 
@@ -267,19 +257,13 @@ public class ExpenseController {
 
     logger.info("update expense: " + expense.toString());
 
-    KeycloakAuthenticationToken userAuth = (KeycloakAuthenticationToken) principal;
-    String userId = securityService.getUserIdFromPrincipal(userAuth);
-
-    logger.info("setting epxense for userid: " + userId);
-
-    logger.info("checking account");
-
     if (expense.getId() == null) {
       logger.warn("trying to update new expense");
       throw new BadRequestException("cannot update an expense without ID");
 
     }
 
+    logger.info("checking account");
     if (expense.getAccountId() == null || expense.getAccountId() == 0) {
       logger.warn("no account id is set for dto");
       throw new BadRequestException("cannot update an expense without account");
@@ -287,7 +271,7 @@ public class ExpenseController {
     }
 
     Expense exp = entitiesConverter.getExpenseFromDTO(expense);
-    Expense response = expensesService.save(exp);
+    Expense response = expensesService.save(exp, (KeycloakAuthenticationToken) principal);
 
     logger.info("Expense is updated: " + response.toString());
 

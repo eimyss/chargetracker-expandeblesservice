@@ -44,5 +44,5 @@ feign:
 expenses:
   messaging:
     exchange: eventExchange
-    bookingQueueName: bookingServiceQueue
+    bookingProcessedQueueName: bookingServiceQueue
     expensesQueueName: expensesServiceQueue

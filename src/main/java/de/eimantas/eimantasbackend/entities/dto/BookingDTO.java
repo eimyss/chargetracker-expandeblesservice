@@ -19,7 +19,7 @@ public class BookingDTO {
   private String name;
   @JsonDeserialize(using = CustomLocalDateDeSerializer.class)
   @JsonSerialize(using = CustomLocalDateSerializer.class)
-  private LocalDateTime startdate;
+  private LocalDateTime startDate;
   @JsonDeserialize(using = CustomLocalDateDeSerializer.class)
   @JsonSerialize(using = CustomLocalDateSerializer.class)
   private LocalDateTime endDate;

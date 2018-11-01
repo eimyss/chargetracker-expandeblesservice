@@ -21,8 +21,8 @@ public class ConsumerConfiguration {
   @Value("${expenses.messaging.exchange}")
   private String eventexchange;
 
-  @Value("${expenses.messaging.bookingQueueName}")
-  private String bookingQueue;
+  @Value("${expenses.messaging.bookingProcessedQueueName}")
+  private String bookingProcessedQueue;
 
   @Value("${expenses.messaging.expensesQueueName}")
   private String expensesQueue;
@@ -35,7 +35,7 @@ public class ConsumerConfiguration {
 
   @Bean
   public Queue bookingQueue() {
-    return new Queue(bookingQueue);
+    return new Queue(bookingProcessedQueue);
   }
 
 
@@ -83,7 +83,7 @@ public class ConsumerConfiguration {
                                                   @Qualifier("bookingListenerAdapter") MessageListenerAdapter listenerAdapter) {
     SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
     container.setConnectionFactory(connectionFactory);
-    container.setQueueNames(bookingQueue);
+    container.setQueueNames(bookingProcessedQueue);
     container.setMessageListener(listenerAdapter);
     return container;
   }

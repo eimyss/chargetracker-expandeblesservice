@@ -58,7 +58,7 @@ public class PostConstructBean implements ApplicationRunner {
     booking.setName("populated");
     booking.setUserId(PopulateStuff.TEST_USER_ID);
     booking.setProjectId(2L);
-    booking.setStartdate(LocalDateTime.now());
+    booking.setStartDate(LocalDateTime.now());
     booking.setEndDate(LocalDateTime.now());
     booking.setId(1L);
     Booking b = bookingRepository.save(booking);

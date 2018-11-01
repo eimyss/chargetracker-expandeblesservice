@@ -39,4 +39,14 @@ public class SecurityService {
     return ctx.getToken().getSubject();
 
   }
+
+  public String getToken(KeycloakAuthenticationToken keycloakAuthenticationToken) {
+    if (keycloakAuthenticationToken == null) {
+      throw new SecurityException("Principal cannot be null");
+    }
+
+    KeycloakPrincipal principal = (KeycloakPrincipal) keycloakAuthenticationToken.getPrincipal();
+    RefreshableKeycloakSecurityContext ctx = (RefreshableKeycloakSecurityContext) principal.getKeycloakSecurityContext();
+    return ctx.getTokenString();
+  }
 }

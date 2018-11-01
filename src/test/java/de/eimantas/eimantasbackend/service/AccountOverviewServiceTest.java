@@ -212,11 +212,9 @@ public class AccountOverviewServiceTest {
 
   @Test
   public void readAllMonthsOverviewNoDto() throws Exception {
-
     List<MonthAndAmountOverview> dto = overviewProcessor.getPerMonthOverView(6, expenses, null);
     assertThat(dto).isNotNull();
-    assertThat(dto.size()).isEqualTo(6);
-
+    assertThat(dto.size()).isEqualTo(0);
     logger.info(dto.toString());
 
 

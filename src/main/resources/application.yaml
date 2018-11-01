@@ -54,5 +54,5 @@ eureka:
 expenses:
   messaging:
     exchange: eventExchange
-    bookingQueueName: bookingServiceQueue-ref
+    bookingProcessedQueueName: bookingProcessedServiceQueue-ref
     expensesQueueName: expensesServiceQueue-ref
