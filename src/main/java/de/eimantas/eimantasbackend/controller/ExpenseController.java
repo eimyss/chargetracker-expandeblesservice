@@ -231,10 +231,8 @@ public class ExpenseController {
     }
 
     logger.info("creating expense: " + expense.toString());
-
-
+    expense.setUserId(securityService.getUserIdFromPrincipal((KeycloakAuthenticationToken) principal));
     logger.info("Publishing expenses to messaging");
-    //expense.setUserId(user.getId());
     Expense exp = entitiesConverter.getExpenseFromDTO(expense);
     Expense response = expensesService.save(exp, (KeycloakAuthenticationToken) principal);
     logger.info("Expense is saved: " + response.toString());
