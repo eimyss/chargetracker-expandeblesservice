@@ -99,6 +99,20 @@ public class ExpenseController {
     return entitiesConverter.getExpenseDTO(expenseOptional);
   }
 
+  @GetMapping("/get/refbooking/{id}")
+  @CrossOrigin(origins = "*")
+  public ExpenseDTO getExpenseByRefBookingId(@PathVariable int id, Principal principal) throws NonExistingEntityException {
+    logger.info("get expense for id: " + id);
+    Expense expenseOptional = expensesService.getExpenseByRefBooking(id, (KeycloakAuthenticationToken) principal);
+    if (expenseOptional == null) {
+      logger.warn("expense with id : " + id + "is not present");
+      throw new NonExistingEntityException("Expense  REf booking id: '" + id + "' is null");
+    }
+    logger.info("expense found!");
+    return entitiesConverter.getExpenseDTO(expenseOptional);
+  }
+
+
 
   @GetMapping("/account/{accountId}")
   @CrossOrigin(origins = "*")

@@ -102,6 +102,11 @@ public class ExpensesOverviewServiceTest {
         expenses.add(e);
       }
     }
+    Expense exp = TestUtils.getExpense();
+    exp.setUserId(TestUtils.USER_ID);
+    exp.setAccountId(1L);
+    exp.setRefBookingId(1);
+    expenses.add(exp);
 
     expensesRepository.saveAll(expenses);
 
@@ -113,7 +118,7 @@ public class ExpensesOverviewServiceTest {
 
     List<Expense> found = expensesService.searchExpensesForUser("upl", mockPrincipal);
     assertThat(found).isNotNull();
-    assertThat(found.size()).isEqualTo(18);
+    assertThat(found.size()).isEqualTo(expenses.size());
 
   }
 
@@ -122,7 +127,7 @@ public class ExpensesOverviewServiceTest {
 
     List<Expense> found = expensesService.searchExpensesForUser("uploaded", mockPrincipal);
     assertThat(found).isNotNull();
-    assertThat(found.size()).isEqualTo(18);
+    assertThat(found.size()).isEqualTo(expenses.size());
 
   }
 
@@ -182,9 +187,9 @@ public class ExpensesOverviewServiceTest {
     Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, mockPrincipal);
 
     assertThat(overView.isPresent()).isEqualTo(true);
-    assertThat(overView.get().getCountExpenses()).isEqualTo(18);
+    assertThat(overView.get().getCountExpenses()).isEqualTo(expenses.size());
     assertThat(overView.get().getRefAccountId()).isEqualTo(1L);
-    assertThat(overView.get().getTotalExpensesCount()).isEqualTo(18);
+    assertThat(overView.get().getTotalExpensesCount()).isEqualTo(expenses.size());
     assertThat(overView.get().getTotal()).isEqualTo(BigDecimal.valueOf(180L));
 
 
@@ -196,7 +201,6 @@ public class ExpensesOverviewServiceTest {
     Optional<AccountOverViewDTO> overView = expensesService.getExpensesOverview(1L, null);
     assertThat(overView.isPresent()).isEqualTo(true);
 
-
   }
 
   @Test
@@ -207,12 +211,21 @@ public class ExpensesOverviewServiceTest {
 
   }
 
+  @Test
+  public void getExpenseByRefBooking() throws Exception {
+
+    Expense expense = expensesService.getExpenseByRefBooking((Integer)1, mockPrincipal);
+    assertThat(expense).isNotNull();
+
+  }
+
+
 
   @Test
   public void testGetExpensesCount() throws Exception {
 
     int count = expensesService.getExpensesCountForAcc(1L, mockPrincipal);
-    assertThat(count).isEqualTo(18);
+    assertThat(count).isEqualTo(expenses.size());
 
   }
 

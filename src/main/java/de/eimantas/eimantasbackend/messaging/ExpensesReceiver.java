@@ -35,7 +35,7 @@ public class ExpensesReceiver {
 
     try {
       JSONObject json = new JSONObject((String) message);
-      expensesService.updateExpenseToProcessed(json);
+      expensesService.createExpenseFromBooking(json);
     } catch (JSONException e) {
       e.printStackTrace();
     }

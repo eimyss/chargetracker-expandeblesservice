@@ -33,6 +33,7 @@ public class Expense {
   private long transactionId;
   @Column(length = 1000)
   private String purpose;
+  private int refBookingId;
   private String currency;
   private LocalDate bookingDate;
   private boolean expensed;

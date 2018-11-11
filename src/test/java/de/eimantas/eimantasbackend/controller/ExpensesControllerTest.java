@@ -115,6 +115,7 @@ public class ExpensesControllerTest {
     exp2.setCategory(ExpenseCategory.ESSEN);
     exp2.setBetrag(BigDecimal.TEN);
     exp2.setOrt("Bingen");
+    exp2.setRefBookingId(1);
     exp2.setCreateDate(Instant.now().minus(40, ChronoUnit.DAYS));
     exp2.setAccountId(1L);
     exp2.setUserId("1L");
@@ -160,6 +161,15 @@ public class ExpensesControllerTest {
         .andExpect(jsonPath("$[1].id", is(this.expensesList.get(1).getId().intValue())))
         .andExpect(jsonPath("$[1].category", is("ESSEN"))).andExpect(jsonPath("$[1].ort", is("Bingen")));
   }
+
+  @Test
+  public void readExpensesByRefBooking() throws Exception {
+    mockMvc.perform(get("/expense/get/refbooking/" + 1).principal(mockPrincipal)).andExpect(status().isOk())
+        .andDo(MockMvcResultHandlers.print()).andExpect(content().contentType(contentType))
+        .andExpect(jsonPath("$.id", is(this.expensesList.get(1).getId().intValue())))
+        .andExpect(jsonPath("$.name", is("test-2")));
+  }
+
 
   @Test
   @Ignore

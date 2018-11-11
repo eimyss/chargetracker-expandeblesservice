@@ -45,6 +45,7 @@ public class ConsumerConfiguration {
   }
 
 
+  //This one is when booking is processed and it should be added as new a new expense
   @Bean
   Binding bookingsBinding() {
     return BindingBuilder.bind(bookingQueue()).to(eventExchange()).with("booking.processed");
@@ -88,7 +89,7 @@ public class ConsumerConfiguration {
     return container;
   }
 
-
+// this is when new expense should be created (from booking), and persist to db
   @Bean
   SimpleMessageListenerContainer expensesContainer(ConnectionFactory connectionFactory,
                                                    @Qualifier("expensesListenerAdapter") MessageListenerAdapter listenerAdapter) {

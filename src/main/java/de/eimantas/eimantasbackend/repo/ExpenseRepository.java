@@ -53,4 +53,6 @@ public interface ExpenseRepository extends CrudRepository<Expense, Long>, JpaSpe
 
   @Query("SELECT COUNT(e) FROM expenses e WHERE e.userId = :userId")
   int selectCountByUserId(@Param("userId") String userId);
+
+  Expense findByRefBookingIdAndUserId(int id, String userIdFromPrincipal);
 }

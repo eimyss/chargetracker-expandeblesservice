@@ -229,6 +229,7 @@ public class ExpensesService {
       expense.setCreateDate(Instant.now());
       expense.setValid(true);
       expense.setUserId(userId);
+      expense.setRefBookingId(bookingId);
       expense.setCurrency("EUR");
       expense.setForecasted(true);
       expense.setExpensable(false);
@@ -277,6 +278,8 @@ public class ExpensesService {
   }
 
 
+
+
   private int parseInt(JSONObject json, String key) {
     try {
       return json.getInt(key);
@@ -293,5 +296,9 @@ public class ExpensesService {
       return 0;
     }
     return expenseRepository.selectCountByUserId(securityService.getUserIdFromPrincipal(authentication));
+  }
+
+  public Expense getExpenseByRefBooking(Integer id, KeycloakAuthenticationToken principal) {
+    return expenseRepository.findByRefBookingIdAndUserId(id, securityService.getUserIdFromPrincipal(principal));
   }
 }
