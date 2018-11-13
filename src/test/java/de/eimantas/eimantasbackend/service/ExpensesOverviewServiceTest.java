@@ -190,7 +190,7 @@ public class ExpensesOverviewServiceTest {
     assertThat(overView.get().getCountExpenses()).isEqualTo(expenses.size());
     assertThat(overView.get().getRefAccountId()).isEqualTo(1L);
     assertThat(overView.get().getTotalExpensesCount()).isEqualTo(expenses.size());
-    assertThat(overView.get().getTotal()).isEqualTo(BigDecimal.valueOf(180L));
+    assertThat(overView.get().getTotal()).isEqualTo(BigDecimal.valueOf(190L));
 
 
   }

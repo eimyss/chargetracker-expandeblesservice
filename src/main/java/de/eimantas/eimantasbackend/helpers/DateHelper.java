@@ -40,20 +40,23 @@ public class DateHelper {
    *
    * @param monthsbefore
    * @param date         to check
-   * @return
+   * @return true if the date lies in the month specified with monthsbefore.
    */
   public static boolean isInMonth(int monthsbefore, Instant date) {
-
-    // OMG So innefient
+    logger.debug("months ago: " + monthsbefore);
+    logger.debug("date to check: " + date.toString());
     LocalDate checkDate = LocalDateTime.ofInstant(date, ZoneOffset.UTC).toLocalDate();
+    logger.debug("date converted: " + checkDate);
 
     LocalDate today = LocalDate.now();
     LocalDate ago = today.minus(Period.ofMonths(monthsbefore));
 
     LocalDate start = ago.withDayOfMonth(1);
+    logger.debug("min date with number of months: " + start.toString());
     LocalDate end = ago.withDayOfMonth(ago.lengthOfMonth());
+    logger.debug("max date with number of months: " + end.toString());
 
-    return start.isBefore(checkDate) && end.isAfter(checkDate);
+    return checkDate.isAfter(start) && checkDate.isBefore(end);
 
   }
 
