@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,14 +16,12 @@ import java.util.Map;
 @ApiModel(description = "")
 public class AllAccountsOverViewDTO {
 
-  private Map<Long, List<MonthAndAmountOverview>> overview;
+  private List<MontlyAmountOverview> overview;
+  private List<ExpenseDTO> unexpenced;
 
   int monthBack;
   private LocalDateTime createDate;
   private String userId;
-
-
-  List<ExpenseDTO> unexpenced;
 
 
   public void addNotExpenced(List<ExpenseDTO> expenseDTOS) {

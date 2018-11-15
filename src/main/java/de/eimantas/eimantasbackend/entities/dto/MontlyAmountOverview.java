@@ -5,13 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @ApiModel(description = "")
-public class MonthAndAmountOverview {
-  private String month;
-  private BigDecimal amount;
+public class MontlyAmountOverview {
+  private Long accountId;
+  private List<MonthAndAmountOverview> overviews;
 }

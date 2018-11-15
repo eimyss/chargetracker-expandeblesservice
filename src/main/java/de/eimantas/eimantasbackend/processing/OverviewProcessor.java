@@ -181,14 +181,19 @@ public class OverviewProcessor {
     dto.setMonthBack(monthsGoBack);
     //dto.setUserId(userId);
 
+    List<MontlyAmountOverview> monthsOverview = new ArrayList<>();
+
     logger.info("got accounts List: " + accountIds.size());
     for (Long accId : accountIds) {
       Collection<Expense> expenses = expensesService.findByAccountId(accId, userId);
       logger.info("found " + expenses.size() + " for account id: " + accId);
-      overview.put(accId, getPerMonthOverView(monthsGoBack, expenses, dto));
+      MontlyAmountOverview montlyAmountOverview = new MontlyAmountOverview();
+      montlyAmountOverview.setAccountId(accId);
+      montlyAmountOverview.setOverviews(getPerMonthOverView(monthsGoBack, expenses, dto));
+      monthsOverview.add(montlyAmountOverview);
     }
 
-    dto.setOverview(overview);
+    dto.setOverview(monthsOverview);
 
     return dto;
   }
