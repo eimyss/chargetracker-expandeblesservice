@@ -24,6 +24,7 @@ public class BookingDTO {
   @JsonSerialize(using = CustomLocalDateSerializer.class)
   private LocalDateTime endDate;
   private int projectId;
+  private long workLocation;
   private int serverBookingId;
   private String userId;
 }

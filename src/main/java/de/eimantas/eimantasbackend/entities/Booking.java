@@ -28,6 +28,7 @@ public class Booking {
   @JsonDeserialize(using = CustomLocalDateDeSerializer.class)
   @JsonSerialize(using = CustomLocalDateSerializer.class)
   private LocalDateTime endDate;
+  private long workLocation;
   private long projectId;
   @Id
   @GeneratedValue
