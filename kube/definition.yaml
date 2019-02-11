@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: expensable
+  labels:
+    app: expensable
+spec:
+  ports:
+    - name: http
+      port: 8080
+
+  selector:
+    app: expensable
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: expensable
+spec:
+  hosts:
+    - "exp.apps.eimantas.server"
+  gateways:
+    - expenses-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /expensable
+      route:
+        - destination:
+            port:
+              number: 8080
+            host: expensable
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: appl-yaml
+data:
+  application.yml: |-
+    greeting:
+      message: Say Hello to the World
+    ---
+    spring:
+      profiles: development
+    greeting:
+      message: Say Hello to the Developers
+    ---
+    spring:
+      profiles: production
+    greeting:
+      message: Say Hello to the Ops
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: expensable
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: expensable
+    spec:
+      containers:
+        - name: expensable
+          image: docker-registry.eimantas.server/expenses-account:1.19 
+          ports:
+            - name: http-port
+              containerPort: 8080
+          volumeMounts:
+          - name: "appl-yaml"
+            readOnly: true
+            mountPath: "/config"
+          env:
+            - name: JAVA_OPTIONS
+              value: -Dspring.profiles.active=developer
+      imagePullSecrets:
+        - name: local-registry
+
+---
