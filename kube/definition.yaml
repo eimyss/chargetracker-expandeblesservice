@@ -74,6 +74,10 @@ spec:
           env:
             - name: JAVA_OPTIONS
               value: -Dspring.profiles.active=developer
+      volumes:
+        - name: appl-yaml
+          configMap:
+            name: appl-yaml
       imagePullSecrets:
         - name: local-registry
 
